@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>sysadmin playground part 08 | nfs | efym.net</title>
+	<link rel="canonical" href="http://efym.net/">
+	<link rel='alternate' type='application/rss+xml' title="efym.net RSS" href='/index.xml'>
+	<link rel='stylesheet' type='text/css' href='/style.css'>
+	<link rel="icon" href="/favicon.ico">
+	<meta name="description" content="Recreation of a lab environment with Terraform and Ansible.
+This post is part of a series, follow the links to the other parts: Sysadmin Playground Part 01 | Intro
+Sysadmin Playground Part 02 | Terraform and KVM
+Sysadmin Playground Part 03 | Ansible and Docker
+Sysadmin Playground Part 04 | OpenLDAP
+Sysadmin Playground Part 05 | Passwords and Ansible Vault
+Sysadmin Playground Part 06 | Centralized Logs
+Sysadmin Playground Part 07 | E-mail">
+	<meta name="keywords" content="sysadmin, linux">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="robots" content="index, follow">
+	<meta charset="utf-8">
+</head>
+<body>
+<div class="topbar">
+<nav class="menu">
+<div class="nav-left">
+ <ul>
+	<li><a href="/"><img class="logo" src="/svg/efym/net.svg" alt="logo"></a></li>
+  </ul>
+</div>
+<div class="nav-right">
+ <ul>
+	<li><a href="/contact">contact</a></li>
+	<li><a href="/support">support</a></li>
+	<li><a href="/services">services</a></li>
+	<li><a href="/blog">blog</a></li>
+	<li><a href="/about">about</a></li>
+  </ul>
+</div>
+</nav>
+</div>
+<main>
+<header><h1>Sysadmin Playground Part 08 | NFS</h1></header>
+<article>
+<p class="date">September 28, 2021</p>
+<p>Recreation of a lab environment with Terraform and Ansible.</p>
+<hr>
+<strong>This post is part of a series, follow the links to the other parts:</strong>
+<br>
+
+
+<a href="/blog/sysadmin-playground01-intro/">Sysadmin Playground Part 01 | Intro</a><br>
+
+<a href="/blog/sysadmin-playground02-terraform-kvm/">Sysadmin Playground Part 02 | Terraform and KVM</a><br>
+
+<a href="/blog/sysadmin-playground03-ansible-docker/">Sysadmin Playground Part 03 | Ansible and Docker</a><br>
+
+<a href="/blog/sysadmin-playground04-openldap/">Sysadmin Playground Part 04 | OpenLDAP</a><br>
+
+<a href="/blog/sysadmin-playground05-passwords-ansible-vault/">Sysadmin Playground Part 05 | Passwords and Ansible Vault</a><br>
+
+<a href="/blog/sysadmin-playground06-centralized-logs/">Sysadmin Playground Part 06 | Centralized Logs</a><br>
+
+<a href="/blog/sysadmin-playground07-email/">Sysadmin Playground Part 07 | E-mail</a><br>
+
+<a href="/blog/sysadmin-playground08-nfs/">Sysadmin Playground Part 08 | NFS</a><br>
+
+
+<hr>
+<h2 id="nfs-server">NFS server</h2>
+<p>Through the <strong>LDAP</strong> server we deployed previously we have achieved a centralized authentication management, to compliment that I think it&rsquo;s pertinent that the <code>/home</code> directory is centralized too, in a way that every virtual machine has it as a mount-point directed to a file server located at <strong>tyule.pygrn.lab</strong>, instead of each box having a local directory for it separate from the other boxes.</p>
+<p>There are many protocols and network filesystems that would help us create this type of centralized storage, in this chapter we&rsquo;re going to be using <strong>NFS</strong> which is one of the more widespread services used to accomplish our objective.</p>
+<p>One of the problem with <strong>NFS</strong> is that it doesn&rsquo;t support <strong>TLS</strong> encryption (or any other form of encryption) natively. Anyone sniffing the network could grab the packets in-transit; a standard <strong>NFS</strong> connection looks like this:</p>
+<p><img src="/blog/sysadmin-playground/13.png" alt=""></p>
+<p>But we&rsquo;re going to get around that by creating a tunnel with <a href="https://www.stunnel.org">stunnel</a> through which the connection between the <strong>NFS</strong> client and the server will flow; it&rsquo;ll be more like this:</p>
+<p><img src="/blog/sysadmin-playground/14.png" alt=""></p>
+<p>We will also encrypt the partition which will hold the filesystem that hosts the <strong>NFS</strong> export with <strong>luks</strong> to protect our users&rsquo; data at rest.</p>
+<p>We won&rsquo;t be using containers to deploy this, we&rsquo;ll install the packages directly on the virtual machines because the idea is for every machine to share the same <strong>/home</strong> directory, so using containers would add an unnecesary layer of complexity which would barely grant any reproducible benefit.<br>
+We&rsquo;re still going to use <strong>Ansible</strong> for the deployment though. We&rsquo;ll also need to create a certificate with <strong>certstrap</strong> (or any tool you&rsquo;ve been using to manage the CA) so go do that now and copy it to the <code>files/CA</code> directory; this time it needs to be in <strong>pem</strong> format and the private and public parts will be concatenated on the same file; so we only need: <code>nfs.pem</code> which will contain both sides of the key.</p>
+<p>First create the keyfile that will be used to encrypt and decrypt the <strong>luks</strong> container.</p>
+<pre tabindex="0"><code>$ dd if=/dev/urandom bs=32 count=1 of=files/nfs/luks_vdb_keyfile
+</code></pre><p>Now create an <strong>Ansible</strong> role called <code>nfs</code> and its task file.</p>
+<p><strong><code>$ cat roles/nfs/tasks/main.yml</code></strong></p>
+<pre tabindex="0"><code>---
+- name: Install nfs server, stunnel and cryptsetup
+  apt:
+    name: &#34;{{ item }}&#34;
+    state: &#34;latest&#34;
+    update_cache: &#34;yes&#34;
+  with_items:
+    - &#34;cryptsetup&#34;
+    - &#34;nfs-kernel-server&#34;
+    - &#34;stunnel&#34;
+
+- name: Copy luks_vdb_keyfile into /etc/
+  copy:
+    src: &#34;nfs/luks_vdb_keyfile&#34;
+    dest: &#34;/etc/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0400&#34;
+
+- name: Encrypt /dev/vdb with luks and open the container
+  luks_device:
+    device: &#34;/dev/vdb&#34;
+    state: &#34;opened&#34;
+    keyfile: &#34;/etc/luks_vdb_keyfile&#34;
+    name: &#34;homecrypt&#34;
+    label: &#34;homecrypt&#34;
+
+- name: Add /dev/mapper/homecrypt to crypttab
+  crypttab:
+    backing_device: &#34;/dev/vdb&#34;
+    name: &#34;/dev/mapper/homecrypt&#34;
+    password: &#34;/etc/luks_vdb_keyfile&#34;
+    state: &#34;present&#34;
+
+- name: Format /dev/mapper/homecrypt in ext4 if it&#39;s missing a filesystem
+  filesystem:
+    device: &#34;/dev/mapper/homecrypt&#34;
+    fstype: &#34;ext4&#34;
+    state: &#34;present&#34;
+
+- name: Add /home mount entry to /etc/fstab
+  mount:
+    src: &#34;/dev/mapper/homecrypt&#34;
+    path: &#34;/home&#34;
+    fstype: &#34;ext4&#34;
+    state: &#34;mounted&#34;
+
+- name: Edit /etc/exports to include /home share through stunnel
+  lineinfile:
+    path: &#34;/etc/exports&#34;
+    line: &#34;/home 127.0.0.1(fsid=0,rw,sync,anonuid=0,anongid=0,no_subtree_check,insecure)&#34;
+    state: &#34;present&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0644&#34;
+  register: &#34;exportsf&#34;
+
+- name: Re-export nfs shares if /etc/exports file changes
+  when: &#34;exportsf.changed&#34;
+  command:
+    cmd: &#34;exportfs -a&#34;
+
+- name: Copy nfs pem key into /etc/ssl/pygrn.lab/
+  copy:
+    src: &#34;CA/nfs.pem&#34;
+    dest: &#34;/etc/ssl/pygrn.lab/&#34;
+    owner: &#34;root&#34;
+    group: &#34;ssl-cert&#34;
+    mode: &#34;0660&#34;
+
+- name: Copy stunnel server file into /etc/stunnel/
+  copy:
+    src: &#34;nfs/stunnel/server-nfs_tls.conf&#34;
+    dest: &#34;/etc/stunnel/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0644&#34;
+
+- name: Copy nfs server systemd socket into /etc/systemd/system/
+  copy:
+    src: &#34;nfs/systemd/server-nfs_tls.socket&#34;
+    dest: &#34;/etc/systemd/system/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0644&#34;
+
+- name: Copy nfs server systemd service into /etc/systemd/system/
+  copy:
+    src: &#34;nfs/systemd/server-nfs_tls@.service&#34;
+    dest: &#34;/etc/systemd/system/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0644&#34;
+
+- name: Set /var/empty/stunnel for stunnel chroot
+  file:
+    dest: &#34;/var/empty/stunnel&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0755&#34;
+    state: &#34;directory&#34;
+
+- name: Start stunnel systemd socket
+  systemd:
+    name: &#34;server-nfs_tls.socket&#34;
+    state: &#34;started&#34;
+</code></pre><p>That role copies the keyfile to the virtual machine acting as the <strong>NFS</strong> server which is <strong>tyule</strong>, encrypts <code>/dev/vdb</code> with <strong>luks</strong>, opens the encrypted drive, formats it with ext4 and mounts it at <code>/home</code>; as well as adds entries to <code>/etc/crypttab</code> and <code>/etc/fstab</code> in order to perform these tasks at each reboot.</p>
+<p>The keyfile to unlock <code>/dev/mapper/homecrypt</code> will be located at <code>/etc/luks_vdb_keyfile</code> with 0400 ugo permissions, so only <strong>root</strong> will be able to read it.</p>
+<p>It also sets up <strong>/home</strong> as an <strong>NFS</strong> export and puts in place <strong>stunnel</strong>&rsquo;s configuration file and <strong>systemd</strong> socket unit. This is the server side of the <strong>NFS</strong> server.</p>
+<p>Here are the server configuration files being copied to the virtual machines, create them with this content:</p>
+<p><strong><code>$ cat files/nfs/stunnel/server-nfs_tls.conf</code></strong></p>
+<pre tabindex="0"><code># global
+sslVersion      = TLSv1.3
+TIMEOUTidle     = 600
+renegotiation   = no
+FIPS            = no
+options         = NO_SSLv2
+options         = NO_SSLv3
+options         = SINGLE_DH_USE
+options         = SINGLE_ECDH_USE
+options         = CIPHER_SERVER_PREFERENCE
+syslog          = yes
+setuid          = nobody
+setgid          = nogroup
+chroot          = /var/empty/stunnel
+libwrap         = yes
+service         = server-nfs_tls
+curve           = secp521r1
+ciphers         = ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AES:!aNULL:!MD5:!DSS
+
+# credentials
+verify          = 4
+CAfile          = /etc/ssl/pygrn.lab/nfs.pem
+cert            = /etc/ssl/pygrn.lab/nfs.pem
+
+# role
+connect         = 127.0.0.1:2049
+</code></pre><p><strong><code>$ cat files/nfs/systemd/server-nfs_tls.socket</code></strong></p>
+<pre tabindex="0"><code>[Unit]
+Description=NFS over stunnel/TLS server
+
+[Socket]
+ListenStream=2363
+Accept=yes
+TimeoutSec=600
+
+[Install]
+WantedBy=sockets.target
+</code></pre><p><strong><code>$ cat files/nfs/systemd/server-nfs_tls@.service</code></strong></p>
+<pre tabindex="0"><code>[Unit]
+Description=NFS over stunnel/TLS server
+
+[Service]
+ExecStart=/usr/bin/stunnel /etc/stunnel/server-nfs_tls.conf
+StandardInput=socket
+</code></pre><h2 id="nfs-clients">NFS Clients</h2>
+<p>Now that we have <strong>tyule</strong> serving its <code>/home</code> directory through <strong>NFS</strong> let&rsquo;s reconfigure every other virtual machine to mount that <strong>NFS</strong> export as their own <code>/home</code> directory. Create another <strong>Ansible</strong> role called <code>nfs-client</code> and its task file looking like this:</p>
+<p><strong><code>$ cat roles/nfs-client/tasks/main.yml</code></strong></p>
+<pre tabindex="0"><code>---
+- name: Install nfs-common and stunnel
+  when: &#34;ansible_hostname != nfs_host_short&#34;
+  apt:
+    name: &#34;{{ item }}&#34;
+    state: &#34;latest&#34;
+    update_cache: &#34;yes&#34;
+  with_items:
+    - &#34;nfs-common&#34;
+    - &#34;stunnel&#34;
+
+- name: Copy nfs pem key into /etc/ssl/pygrn.lab/
+  when: &#34;ansible_hostname != nfs_host_short&#34;
+  copy:
+    src: &#34;CA/nfs.pem&#34;
+    dest: &#34;/etc/ssl/pygrn.lab/&#34;
+    owner: &#34;root&#34;
+    group: &#34;ssl-cert&#34;
+    mode: 0660
+
+- name: Copy stunnel client file into /etc/stunnel/
+  when: &#34;ansible_hostname != nfs_host_short&#34;
+  copy:
+    src: &#34;nfs/stunnel/client-nfs_tls.conf&#34;
+    dest: &#34;/etc/stunnel/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: 0644
+
+- name: Copy nfs client systemd socket into /etc/systemd/system/
+  when: &#34;ansible_hostname != nfs_host_short&#34;
+  copy:
+    src: &#34;nfs/systemd/client-nfs_tls.socket&#34;
+    dest: &#34;/etc/systemd/system/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: 0644
+
+- name: Copy nfs client systemd service into /etc/systemd/system/
+  when: &#34;ansible_hostname != nfs_host_short&#34;
+  copy:
+    src: &#34;nfs/systemd/client-nfs_tls@.service&#34;
+    dest: &#34;/etc/systemd/system/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: 0644
+
+- name: Set /var/empty/stunnel for stunnel chroot
+  when: &#34;ansible_hostname != nfs_host_short&#34;
+  file:
+    dest: &#34;/var/empty/stunnel&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0755&#34;
+    state: &#34;directory&#34;
+
+- name: Start stunnel systemd socket
+  when: &#34;ansible_hostname != nfs_host_short&#34;
+  systemd:
+    name: &#34;client-nfs_tls.socket&#34;
+    state: &#34;started&#34;
+
+- name: Add and mount /home entry into /etc/fstab pointing at stunnel
+  when: &#34;ansible_hostname != nfs_host_short&#34;
+  mount:
+    src: &#34;localhost:/&#34;
+    path: &#34;/home&#34;
+    fstype: &#34;nfs&#34;
+    state: &#34;mounted&#34;
+    opts: &#34;noauto,vers=4.2,proto=tcp,port=2323&#34;
+</code></pre><p>This role copies the client files used to mount the <code>/home</code> directory for every virtual machine except <strong>tyule</strong>, actually mounts the <strong>NFS</strong> export through <strong>stunnel</strong> and adds an entry to <code>/etc/fstab</code>.</p>
+<p>You might wonder why on the last task the source for the <strong>NFS</strong> share is <strong>localhost:/</strong> instead of <strong>tyule.pygrn.lab:/home</strong> and the reason is that we&rsquo;re pointing the mount at our <strong>systemd</strong> socket which activates the rest of the connections steps to route the traffic through <strong>stunnel</strong> (see diagram above).</p>
+<p>And these are the client configuration files:</p>
+<p><strong><code>$ cat files/nfs/stunnel/client-nfs_tls.conf</code></strong></p>
+<pre tabindex="0"><code># global
+sslVersion      = TLSv1.3
+TIMEOUTidle     = 600
+renegotiation   = no
+FIPS            = no
+options         = NO_SSLv2
+options         = NO_SSLv3
+options         = SINGLE_DH_USE
+options         = SINGLE_ECDH_USE
+options         = CIPHER_SERVER_PREFERENCE
+syslog          = yes
+setuid          = nobody
+setgid          = nogroup
+chroot          = /var/empty/stunnel
+libwrap         = yes
+service         = client-nfs_tls
+curve           = secp521r1
+ciphers         = ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AES:!aNULL:!MD5:!DSS
+
+# credentials
+verify          = 4
+CAfile          = /etc/ssl/pygrn.lab/nfs.pem
+cert            = /etc/ssl/pygrn.lab/nfs.pem
+
+# role
+client          = yes
+connect         = tyule.pygrn.lab:2363
+</code></pre><p><strong><code>$ cat files/nfs/systemd/client-nfs_tls.socket</code></strong></p>
+<pre tabindex="0"><code>[Unit]
+Description=NFS over stunnel/TLS client
+
+[Socket]
+ListenStream=2323
+Accept=yes
+TimeoutSec=300
+
+[Install]
+WantedBy=sockets.target
+</code></pre><p><strong><code>$ cat files/nfs/systemd/client-nfs_tls@.service</code></strong></p>
+<pre tabindex="0"><code>[Unit]
+Description=NFS over stunnel/TLS client
+
+[Service]
+ExecStart=/usr/bin/stunnel /etc/stunnel/client-nfs_tls.conf
+StandardInput=socket
+</code></pre><h2 id="running-the-playbook-once-more">Running the playbook once more</h2>
+<p>Review the <code>playbook.yml</code>, <code>hosts</code>, and <code>group_vars/all.yml</code> files:</p>
+<p><strong><code>$ cat playbook.yml</code></strong></p>
+<pre tabindex="0"><code>---
+- name: &#34;Preparation&#34;
+  hosts: all
+  roles:
+    - &#34;global_preparation&#34;
+
+- name: &#34;Syslog-ng Server&#34;
+  hosts: log
+  gather_facts: &#34;no&#34;
+  roles:
+    - &#34;syslog-ng&#34;
+
+- name: &#34;OpenLDAP Server&#34;
+  hosts: ldap
+  gather_facts: &#34;no&#34;
+  roles:
+    - &#34;openldap&#34;
+
+- name: &#34;OpenLDAP Clients&#34;
+  hosts: all
+  gather_facts: &#34;no&#34;
+  roles:
+    - &#34;openldap-client&#34;
+
+- name: &#34;E-mail Server&#34;
+  hosts: email
+  gather_facts: &#34;no&#34;
+  roles:
+    - &#34;mail&#34;
+
+- name: &#34;E-mail Clients&#34;
+  hosts: all
+  gather_facts: &#34;no&#34;
+  roles:
+    - &#34;mail-client&#34;
+
+- name: &#34;NFS Server&#34;
+  hosts: nfs
+  gather_facts: &#34;no&#34;
+  roles:
+    - &#34;nfs&#34;
+
+- name: &#34;NFS Clients&#34;
+  hosts: all
+  gather_facts: &#34;no&#34;
+  roles:
+    - &#34;nfs-client&#34;
+</code></pre><p><strong><code>$ cat hosts</code></strong></p>
+<pre tabindex="0"><code>[log]
+rumsi   ansible_host=192.168.122.8   ansible_ssh_user=root   ansible_ssh_private_key_file=[/path/to/ssh/key]
+
+[ldap]
+doris   ansible_host=192.168.122.2   ansible_ssh_user=root   ansible_ssh_private_key_file=[/path/to/ssh/key]
+cutxn   ansible_host=192.168.122.3   ansible_ssh_user=root   ansible_ssh_private_key_file=[/path/to/ssh/key]
+cutxo   ansible_host=192.168.122.4   ansible_ssh_user=root   ansible_ssh_private_key_file=[/path/to/ssh/key]
+
+[email]
+doris   ansible_host=192.168.122.2   ansible_ssh_user=root   ansible_ssh_private_key_file=[/path/to/ssh/key]
+watts   ansible_host=192.168.122.9   ansible_ssh_user=root   ansible_ssh_private_key_file=[/path/to/ssh/key]
+
+[nfs]
+tyule   ansible_host=192.168.122.7   ansible_ssh_user=root   ansible_ssh_private_key_file=[/path/to/ssh/key]
+
+[undefined]
+boldh   ansible_host=192.168.122.5   ansible_ssh_user=root   ansible_ssh_private_key_file=[/path/to/ssh/key]
+grees   ansible_host=192.168.122.6   ansible_ssh_user=root   ansible_ssh_private_key_file=[/path/to/ssh/key]
+</code></pre><p><strong><code>$ cat group_vars/all.yml</code></strong></p>
+<pre tabindex="0"><code># nfs
+nfs_host: &#34;tyule.pygrn.lab&#34;
+nfs_host_short: &#34;tyule&#34;
+
+# mail
+mail_host: &#34;watts.pygrn.lab&#34;
+mail_host_short: &#34;watts&#34;
+mail_webui_host: &#34;doris.pygrn.lab&#34;
+mail_webui_host_short: &#34;doris&#34;
+
+# openldap
+ldap_host1: &#34;cutxn.pygrn.lab&#34;
+ldap_host1_short: &#34;cutxn&#34;
+ldap_host2: &#34;cutxo.pygrn.lab&#34;
+ldap_host2_short: &#34;cutxo&#34;
+ldap_webui_host: &#34;doris.pygrn.lab&#34;
+ldap_webui_host_short: &#34;doris&#34;
+
+ldap_tw1zr_mail: &#34;tw1zr@pygrn.lab&#34;
+ldap_guest1_mail: &#34;guest2@pygrn.lab&#34;
+ldap_guest2_mail: &#34;guest2@pygrn.lab&#34;
+
+ldap_tw1zr_pass: &#34;fu9F4yzKH3&#34;
+ldap_guest1_pass: &#34;Ln9CQMsDZA&#34;
+ldap_guest2_pass: &#34;bKwDKP6z57&#34;
+
+ldap_admin_pass: &#34;2hJmj7TFrz&#34;
+ldap_config_pass: &#34;bTu5njqLLd&#34;
+ldap_readonly_pass: &#34;Drq8nNEG6C&#34;
+
+# logs
+syslog_ng_host: &#34;rumsi.pygrn.lab&#34;
+syslog_ng_host_short: &#34;rumsi&#34;
+</code></pre><p>Run the playbook again after adjusting those files and that&rsquo;s it. To test it we can create a test file inside the <code>/home</code> directory of one machine and see if it&rsquo;s replicated in the others.</p>
+</article>
+</main>
+<footer>
+<p>licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0">cc by-nc-sa 4.0</a></br>
+standing up for freedom </p>
+</footer>
+</body>
+</html>
+

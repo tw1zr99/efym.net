@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="154.51666mm"
+   height="154.51666mm"
+   viewBox="0 0 154.51666 154.51666"
+   version="1.1"
+   id="svg4400"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs4397">
+    <rect
+       x="127"
+       y="373"
+       width="659"
+       height="286"
+       id="rect49193" />
+    <rect
+       x="-395"
+       y="86"
+       width="889"
+       height="360"
+       id="rect7719" />
+    <rect
+       x="-395"
+       y="86"
+       width="889"
+       height="360"
+       id="rect353" />
+    <rect
+       x="127"
+       y="373"
+       width="659"
+       height="286"
+       id="rect359" />
+  </defs>
+  <g
+     id="layer1"
+     transform="translate(-21.695839,-19.314583)"
+     style="display:inline">
+    <circle
+       style="fill:#7f7f7f;fill-opacity:1;stroke-width:0.264583"
+       id="path5053"
+       cx="98.95417"
+       cy="96.572914"
+       r="77.258331" />
+    <circle
+       style="fill:#2f2f2f;fill-opacity:1;stroke-width:0.315148"
+       id="path5393"
+       cx="-98.95417"
+       cy="-96.572914"
+       r="70.908333"
+       transform="scale(-1)" />
+    <g
+       aria-label="efym"
+       transform="matrix(0.26458333,0,0,0.26458333,86.333543,15.503902)"
+       id="text7717"
+       style="font-size:200px;line-height:1.25;font-family:Cantarell;-inkscape-font-specification:'Cantarell, @wght=800';font-variation-settings:'wght' 800;text-align:center;white-space:pre;shape-inside:url(#rect7719);fill:#e4e4e4">
+      <path
+         d="m -126.69996,267.60251 c 12,0 24.6,-2.2 36.999998,-6.4 l -7.6,-23.4 c -8.199998,2.8 -15.999998,4.2 -23.999998,4.2 -19.4,0 -28.4,-8.4 -28.4,-28.6 0,-14.8 5.2,-22.4 15,-22.4 9,0 14.2,5.8 14.2,16.2 h -33.4 v 19 h 64.599998 c 0.8,-5 1.4,-10 1.4,-15.2 0,-28.6 -16.399998,-45.4 -44.399998,-45.4 -31,0 -51.6,20.4 -51.6,51.2 0,31.6 21.6,50.8 57.2,50.8 z"
+         id="path361" />
+      <path
+         d="m -62.300056,265.60251 h 32.8 v -108 c 0,-8.4 5.6,-13.4 15.6,-13.4 4.7999995,0 10.3999995,1.2 12.99999954,2.6 l 6.79999996,-24.6 c -6.19999996,-4 -15.4,-6.4 -24.7999995,-6.4 -26,0 -43.4,17.6 -43.4,44.2 z m -15.6,-71 h 74.3999995 v -27 H -77.900056 Z"
+         id="path363" />
+      <path
+         d="m 18.699971,309.00251 h 37.6 l 15.2,-43.4 36.999999,-98 H 74.099971 l -23.8,80.4 8.4,0.2 -21.6,-80.6 h -38.2 l 37.6,98 z"
+         id="path365" />
+      <path
+         d="m 244.69998,265.60251 h 34.6 v -56.8 c 0,-26.8 -13,-42.4 -35.2,-42.4 -14,0 -26.2,6.2 -34.2,17.6 l 3.8,20.6 c 5,-5.4 10.6,-8.2 17.4,-8.2 9.4,0 13.6,5.2 13.6,16.2 z m -124.8,0 h 34.6 v -75.2 l -9.6,-22.8 h -25 z m 62.4,0 h 34.6 v -56.8 c 0,-26.8 -13,-42.4 -35.2,-42.4 -14,0 -26.2,6.2 -34.2,17.6 l 3.8,20.6 c 5,-5.4 10.6,-8.2 17.4,-8.2 9.4,0 13.6,5.2 13.6,16.2 z"
+         id="path367" />
+    </g>
+    <g
+       aria-label=".net"
+       transform="matrix(0.26458333,0,0,0.26458333,16.166087,-5.8208336)"
+       id="text49191"
+       style="font-size:200px;line-height:1.25;font-family:Cantarell;-inkscape-font-specification:'Cantarell, @wght=800';font-variation-settings:'wght' 800;white-space:pre;shape-inside:url(#rect49193);fill:#6086c1">
+      <path
+         d="m 155.6,554.60251 c 12.8,0 21.2,-9.2 21.2,-21.2 0,-12.8 -8.4,-22 -21.2,-22 -12.8,0 -21.2,9.2 -21.2,22 0,12 8.4,21.2 21.2,21.2 z"
+         id="path370" />
+      <path
+         d="m 258.99986,552.60251 h 34.6 v -56.8 c 0,-26.8 -13,-42.4 -35.2,-42.4 -14,0 -26.2,6.2 -34.2,17.6 l 3.8,20.6 c 5,-5.4 10.6,-8.2 17.4,-8.2 9.4,0 13.6,5.2 13.6,16.2 z m -62.4,0 h 34.6 v -75.2 l -9.6,-22.8 h -25 z"
+         id="path372" />
+      <path
+         d="m 367.59977,554.60251 c 12,0 24.6,-2.2 37,-6.4 l -7.6,-23.4 c -8.2,2.8 -16,4.2 -24,4.2 -19.4,0 -28.4,-8.4 -28.4,-28.6 0,-14.8 5.2,-22.4 15,-22.4 9,0 14.2,5.8 14.2,16.2 h -33.4 v 19 h 64.6 c 0.8,-5 1.4,-10 1.4,-15.2 0,-28.6 -16.4,-45.4 -44.4,-45.4 -31,0 -51.6,20.4 -51.6,51.2 0,31.6 21.6,50.8 57.2,50.8 z"
+         id="path374" />
+      <path
+         d="m 469.19969,554.20251 c 6.8,0 14.4,-1 22.2,-3.2 l -6.6,-24.4 c -2.6,1 -5.4,1.4 -8,1.4 -8.4,0 -13.4,-4.4 -13.4,-11.6 v -90 h -34 v 91 c 0,23.2 14.4,36.8 39.8,36.8 z m -53.8,-72.6 h 70.6 v -27 h -70.6 z"
+         id="path376" />
+    </g>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,86.333543,15.503902)"
+       id="text351"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:200px;line-height:1.25;font-family:Cantarell;-inkscape-font-specification:'Cantarell, @wght=800';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;font-variation-settings:'wght' 800;text-align:center;white-space:pre;shape-inside:url(#rect353);display:none;fill:#e4e4e4;fill-opacity:1;stroke:none"
+       x="147.79958"
+       y="0" />
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,16.166087,-5.8208336)"
+       id="text357"
+       style="font-size:200px;line-height:1.25;font-family:Cantarell;-inkscape-font-specification:'Cantarell, @wght=800';font-variation-settings:'wght' 800;white-space:pre;shape-inside:url(#rect359);display:none;fill:#6086c1;fill-opacity:1" />
+  </g>
+</svg>

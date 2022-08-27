@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>sysadmin playground part 07 | e-mail | efym.net</title>
+	<link rel="canonical" href="http://efym.net/">
+	<link rel='alternate' type='application/rss+xml' title="efym.net RSS" href='/index.xml'>
+	<link rel='stylesheet' type='text/css' href='/style.css'>
+	<link rel="icon" href="/favicon.ico">
+	<meta name="description" content="Recreation of a lab environment with Terraform and Ansible.
+This post is part of a series, follow the links to the other parts: Sysadmin Playground Part 01 | Intro
+Sysadmin Playground Part 02 | Terraform and KVM
+Sysadmin Playground Part 03 | Ansible and Docker
+Sysadmin Playground Part 04 | OpenLDAP
+Sysadmin Playground Part 05 | Passwords and Ansible Vault
+Sysadmin Playground Part 06 | Centralized Logs
+Sysadmin Playground Part 07 | E-mail">
+	<meta name="keywords" content="sysadmin, linux">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="robots" content="index, follow">
+	<meta charset="utf-8">
+</head>
+<body>
+<div class="topbar">
+<nav class="menu">
+<div class="nav-left">
+ <ul>
+	<li><a href="/"><img class="logo" src="/svg/efym/net.svg" alt="logo"></a></li>
+  </ul>
+</div>
+<div class="nav-right">
+ <ul>
+	<li><a href="/contact">contact</a></li>
+	<li><a href="/support">support</a></li>
+	<li><a href="/services">services</a></li>
+	<li><a href="/blog">blog</a></li>
+	<li><a href="/about">about</a></li>
+  </ul>
+</div>
+</nav>
+</div>
+<main>
+<header><h1>Sysadmin Playground Part 07 | E-mail</h1></header>
+<article>
+<p class="date">September 26, 2021</p>
+<p>Recreation of a lab environment with Terraform and Ansible.</p>
+<hr>
+<strong>This post is part of a series, follow the links to the other parts:</strong>
+<br>
+
+
+<a href="/blog/sysadmin-playground01-intro/">Sysadmin Playground Part 01 | Intro</a><br>
+
+<a href="/blog/sysadmin-playground02-terraform-kvm/">Sysadmin Playground Part 02 | Terraform and KVM</a><br>
+
+<a href="/blog/sysadmin-playground03-ansible-docker/">Sysadmin Playground Part 03 | Ansible and Docker</a><br>
+
+<a href="/blog/sysadmin-playground04-openldap/">Sysadmin Playground Part 04 | OpenLDAP</a><br>
+
+<a href="/blog/sysadmin-playground05-passwords-ansible-vault/">Sysadmin Playground Part 05 | Passwords and Ansible Vault</a><br>
+
+<a href="/blog/sysadmin-playground06-centralized-logs/">Sysadmin Playground Part 06 | Centralized Logs</a><br>
+
+<a href="/blog/sysadmin-playground07-email/">Sysadmin Playground Part 07 | E-mail</a><br>
+
+<a href="/blog/sysadmin-playground08-nfs/">Sysadmin Playground Part 08 | NFS</a><br>
+
+
+<hr>
+<h2 id="e-mail-container">E-mail container</h2>
+<p>Use <strong>certstrap</strong> to create a certificate, common name should be <strong>mail</strong>, move it to <code>files/CA</code> inside the <strong>Ansible</strong> directory before we begin creating the role.</p>
+<p>There are quite a few different options to deploy a mostly ready e-mail service like <a href="https://mailcow.email">mailcow</a> or <a href="https://github.com/LukeSmithxyz/emailwiz">emailwiz</a>, but I chose to go with <a href="https://docker-mailserver.github.io/docker-mailserver/edge">docker-mailserver</a> for this project because:</p>
+<ul>
+<li>Nearly all of its configuration can be done through environment variables.</li>
+<li>Consolidates very many services under one unique container but gives you the option to use them or not.</li>
+<li>Excellent support for authenticating through <strong>LDAP</strong>.</li>
+<li>Stores e-mail files in the filesystem instead of a SQL database.</li>
+</ul>
+<p>Let&rsquo;s create a new <strong>Ansible</strong> role called <code>mail</code> and its tasks file inside:</p>
+<pre tabindex="0"><code>$ mkdir -p roles/mail/tasks &amp;&amp; touch roles/mail/tasks/main.yml
+</code></pre><p>Populate <code>main.yml</code> to look like this:</p>
+<p><strong><code>$ cat roles/mail/tasks/main.yml</code></strong></p>
+<pre tabindex="0"><code>---
+- name: Set /srv/mail permissions
+  file:
+    dest: &#34;/srv/mail&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0755&#34;
+    state: &#34;directory&#34;
+
+- name: Mail server container
+  docker_container:
+    name: &#34;mailserver&#34;
+    restart_policy: &#34;always&#34;
+    image: &#34;mailserver/docker-mailserver:latest&#34;
+    hostname: &#34;{{ ansible_hostname }}.pygrn.lab&#34;
+    published_ports:
+      - &#34;25:25&#34;
+      - &#34;143:143&#34;
+      - &#34;587:587&#34;
+      - &#34;993:993&#34;
+    env:
+      ENABLE_SPAMASSASSIN: &#34;0&#34;
+      ENABLE_CLAMAV: &#34;0&#34;
+      ENABLE_FAIL2BAN: &#34;0&#34;
+      ENABLE_AMAVIS: &#34;0&#34;
+      ENABLE_POSTGREY: &#34;0&#34;
+
+      ENABLE_LDAP: &#34;1&#34;
+      LDAP_START_TLS: &#34;yes&#34;
+      LDAP_SERVER_HOST: &#34;ldap://{{ ldap_host1 }} ldap://{{ ldap_host2 }}&#34;
+      LDAP_BIND_DN: &#34;cn=admin,dc=pygrn,dc=lab&#34;
+      LDAP_BIND_PW: &#34;{{ ldap_admin_pass }}&#34;
+      LDAP_SEARCH_BASE: &#34;dc=pygrn,dc=lab&#34;
+      LDAP_QUERY_FILTER_DOMAIN: &#34;(mail=*@%s)&#34;
+      LDAP_QUERY_FILTER_USER: &#34;(mail=%s)&#34;
+      LDAP_QUERY_FILTER_ALIAS: &#34;(|)&#34;
+      LDAP_QUERY_FILTER_GROUP: &#34;(|)&#34;
+      LDAP_QUERY_FILTER_SENDERS: &#34;(|(mail=%s)(mail=admin@*))&#34;
+      SPOOF_PROTECTION: &#34;1&#34;
+
+      DOVECOT_TLS: &#34;yes&#34;
+      DOVECOT_PASS_ATTRS: &#34;uid=user,userPassword=password&#34;
+      DOVECOT_PASS_FILTER: &#34;(uid=%n)&#34;
+      DOVECOT_USER_FILTER: &#34;(uid=%n)&#34;
+      DOVECOT_USER_ATTRS: &#34;=home=/var/mail/pygrn.lab/%{ldap:uid},=mail=maildir:~/Maildir,mailUidNumber=uid,mailGidNumber=gid&#34;
+
+      ENABLE_SASLAUTHD: &#34;1&#34;
+      SASLAUTHD_LDAP_START_TLS: &#34;yes&#34;
+      SASLAUTHD_MECHANISMS: &#34;ldap&#34;
+      SASLAUTHD_LDAP_FILTER: &#34;(mail=%U@pygrn.lab)&#34;
+      SASLAUTHD_LDAP_TLS_CACERT_FILE: &#34;/tmp/certs/pygrn.lab-CA.crt&#34;
+
+      ONE_DIR: &#34;1&#34;
+      DMS_DEBUG: &#34;0&#34;
+      PERMIT_DOCKER: &#34;host&#34;
+      SSL_TYPE: &#34;manual&#34;
+      SSL_CERT_PATH: &#34;/tmp/certs/mail.crt&#34;
+      SSL_KEY_PATH: &#34;/tmp/certs/mail.key&#34;
+    volumes:
+      - &#34;/etc/timezone:/etc/timezone:ro&#34;
+      - &#34;/etc/localtime:/etc/localtime:ro&#34;
+      - &#34;/srv/mail/mail-conf:/tmp/docker-mailserver&#34;
+      - &#34;/srv/mail/mail-data:/var/mail&#34;
+      - &#34;/srv/mail/mail-state:/var/mail-state&#34;
+      - &#34;/srv/mail/mail-logs:/var/logs/mail&#34;
+      - &#34;/srv/mail/certs:/tmp/certs&#34;
+  register: &#34;mailcontainerf&#34;
+
+- name: Copy mail public key into /srv/mail/cert/
+  copy:
+    src: &#34;CA/mail.crt&#34;
+    dest: &#34;/srv/mail/certs/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0644&#34;
+  register: &#34;mailpubf&#34;
+
+- name: Copy mail private key into /srv/mail/certs/
+  copy:
+    src: &#34;CA/mail.key&#34;
+    dest: &#34;/srv/mail/certs/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0600&#34;
+  register: &#34;mailprivf&#34;
+
+- name: Copy CA file into /srv/mail/certs/
+  copy:
+    src: &#34;CA/pygrn.lab-CA.crt&#34;
+    dest: &#34;/srv/mail/certs/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0644&#34;
+  register: &#34;pygrncaf&#34;
+
+- name: Copy pygrn.lab-CA.crt to mailserver container
+  when: &#34;mailcontainerf.changed&#34;
+  command:
+    cmd: &#34;docker cp /etc/ssl/pygrn.lab/pygrn.lab-CA.crt mailserver:/usr/local/share/ca-certificates/&#34;
+
+- name: Update mailserver container ca-certificates
+  when: &#34;mailcontainerf.changed&#34;
+  command:
+    cmd: &#34;docker exec mailserver sh -c &#39;update-ca-certificates&#39;&#34;
+
+- name: Restart mailserver container if cert files are added/changed
+  when: &#34;pygrncaf.changed or mailpubf.changed or mailprivf.changed&#34;
+  command:
+    cmd: &#34;docker restart mailserver&#34;
+</code></pre><p>As you can see we have disabled SpamAssassin, ClamAV, Fail2ban, Amavis and Postgrey by issuing a &ldquo;0&rdquo; to their environment variables.<br>
+We enabled <strong>LDAP</strong> authentication through <strong>TLS</strong> and defined all the necessary parameters to bind to our <strong>LDAP</strong> server pair; this is done to <strong>Postfix</strong>, <strong>Dovecot</strong> and <strong>SASL</strong> auth mechanism.<br>
+The tasks after defining the container copy certificate files into the directories they need to be and reload/restart the container if or when those files are added or changed.</p>
+<p>This e-mail server will let you log into any of the accounts defined in our <strong>LDAP</strong> server as well as send and receive e-mails, but only inside this network. I do not own the <strong>pygrn.lab</strong> domain, it probably doesn&rsquo;t even exist but it works for us in this configuration because of the way <strong>DNS</strong> is being handled for these machines.</p>
+<p>Instead of setting up a fully functioning e-mail server I could just use <strong>Postfix</strong> to define an <strong>SMTP</strong> relay to another e-mail server anywhere on the Internet, in fact, the guidelines I&rsquo;m loosely following to create this environment specify just this, an <strong>SMTP</strong> relay to gmail. But I thought I&rsquo;d take the fuller approach because I intend to keep this e-mail server restricted to this internal network only; I had never configured <strong>LDAP</strong> authentication for e-mail accounts before; and because fuck Google and all its data-hungry, privacy-violating services.</p>
+<h2 id="e-mail-web-client">E-mail web client</h2>
+<p>Now that the server part is configured, let&rsquo;s also deploy a web client to be able to access it. I personally always check my e-mail from the terminal using <strong>Neomutt,</strong> but that&rsquo;s a user&rsquo;s choice.</p>
+<p>We will use a dockerized implemetation of <a href="https://hub.docker.com/r/roundcube/roundcubemail">Roundcube</a>.</p>
+<p>Append the following lines the end of <strong>roles/mail/tasks/main.yml</strong>:</p>
+<p><strong>Lines to append</strong> to <code>roles/mail/tasks/main.yml</code></p>
+<pre tabindex="0"><code>- name: Roundcube container
+  when: &#34;ansible_hostname == mail_webui_host_short&#34;
+  docker_container:
+    name: &#34;roundcube&#34;
+    restart_policy: &#34;always&#34;
+    image: &#34;roundcube/roundcubemail:latest&#34;
+    log_driver: &#34;syslog&#34;
+    log_options:
+      syslog-address: &#34;tcp+tls://{{ syslog_ng_host }}:6514&#34;
+      tag: &#34;roundcube&#34;
+    published_ports:
+      - &#34;8000:80&#34;
+    env:
+        ROUNDCUBEMAIL_DEFAULT_HOST: &#34;tls://{{ mail_host }}&#34;
+        ROUNDCUBEMAIL_SMTP_SERVER: &#34;tls://{{ mail_host }}&#34;
+    volumes:
+      - &#34;/etc/timezone:/etc/timezone:ro&#34;
+      - &#34;/etc/localtime:/etc/localtime:ro&#34;
+  register: &#34;roundcubef&#34;
+
+- name: Copy pygrn.lab-CA.crt to Roundcube container
+  when: &#34;ansible_hostname == mail_webui_host_short and roundcubef.changed&#34;
+  command:
+    cmd: &#34;docker cp /etc/ssl/pygrn.lab/pygrn.lab-CA.crt roundcube:/usr/local/share/ca-certificates/&#34;
+
+- name: Update Roundcube container ca-certificates
+  when: &#34;ansible_hostname == mail_webui_host_short and roundcubef.changed&#34;
+  command:
+    cmd: &#34;docker exec roundcube sh -c &#39;update-ca-certificates&#39;&#34;
+</code></pre><p>This will setup <strong>Roundcube</strong> pointing at our e-mail server, you can create an <strong>ssh</strong> tunnel to access it from the browser (refer to previous chapters to do this) after we run the playbook and the containers are deployed.</p>
+<h2 id="sendemail-a-command-line-utility">sendEmail, a command line utility</h2>
+<p>We&rsquo;ll also install <strong>sendEmail</strong>, a command line utility to authenticate to an <strong>SMTP</strong> server and send e-mails all with one command. This will be useful to perform tests in future chapters when we start setting up e-mail notifications from our monitoring and backup services. But it would also be useful if our users want to send e-mails to each other and only have a terminal available, through <strong>ssh</strong> for example.</p>
+<p>Create a role called <strong>mail-client</strong> and its task file just like for the server.<br>
+Here&rsquo;s the content of the file:</p>
+<p><strong><code>$ cat roles/mail-client/tasks/main.yml</code></strong></p>
+<pre tabindex="0"><code>---
+- name: Install sendEmail and dependencies
+  apt:
+    name: &#34;{{ item }}&#34;
+    state: latest
+    update_cache: yes
+  with_items:
+      - &#34;libio-socket-ssl-perl&#34;
+      - &#34;libnet-ssleay-perl&#34;
+      - &#34;sendemail&#34;
+</code></pre><h2 id="running-the-playbook-and-testing-results">Running the playbook and testing results</h2>
+<p>Let&rsquo;s have a quick look at the <code>playbook.yml</code>, <code>hosts</code> and <code>group_vars/all.yml</code> files before we run the playbook:</p>
+<p><strong><code>$ cat playbook.yml</code></strong></p>
+<pre tabindex="0"><code>---
+- name: &#34;Preparation&#34;
+  hosts: all
+  roles:
+    - &#34;global_preparation&#34;
+
+- name: &#34;Syslog-ng Server&#34;
+  hosts: log
+  gather_facts: &#34;no&#34;
+  roles:
+    - &#34;syslog-ng&#34;
+
+- name: &#34;OpenLDAP Server&#34;
+  hosts: ldap
+  gather_facts: &#34;no&#34;
+  roles:
+    - &#34;openldap&#34;
+
+- name: &#34;OpenLDAP Clients&#34;
+  hosts: all
+  gather_facts: &#34;no&#34;
+  roles:
+    - &#34;openldap-client&#34;
+
+- name: &#34;E-mail Server&#34;
+  hosts: email
+  gather_facts: &#34;no&#34;
+  roles:
+    - &#34;mail&#34;
+</code></pre><p><strong><code>$ cat hosts</code></strong></p>
+<pre tabindex="0"><code>[log]
+rumsi   ansible_host=192.168.122.8   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+
+[ldap]
+doris   ansible_host=192.168.122.2   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+cutxn   ansible_host=192.168.122.3   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+cutxo   ansible_host=192.168.122.4   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+
+[mail]
+doris   ansible_host=192.168.122.2   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+watts   ansible_host=192.168.122.9   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+
+[undefined]
+boldh   ansible_host=192.168.122.5   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+grees   ansible_host=192.168.122.6   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+tyule   ansible_host=192.168.122.7   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+rumsi   ansible_host=192.168.122.8   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+</code></pre><p><strong><code>$ cat group_vars/all.yml</code></strong></p>
+<pre tabindex="0"><code># logs
+syslog_ng_host: &#34;rumsi.pygrn.lab&#34;
+syslog_ng_host_short: &#34;rumsi&#34;
+
+# mail
+mail_host: &#34;watts.pygrn.lab&#34;
+mail_host_short: &#34;watts&#34;
+mail_webui_host: &#34;doris.pygrn.lab&#34;
+mail_webui_host_short: &#34;doris&#34;
+
+# openldap
+ldap_host1: &#34;cutxn.pygrn.lab&#34;
+ldap_host1_short: &#34;cutxn&#34;
+ldap_host2: &#34;cutxo.pygrn.lab&#34;
+ldap_host2_short: &#34;cutxo&#34;
+ldap_webui_host: &#34;doris.pygrn.lab&#34;
+ldap_webui_host_short: &#34;doris&#34;
+
+ldap_tw1zr_mail: &#34;tw1zr@pygrn.lab&#34;
+ldap_guest1_mail: &#34;guest2@pygrn.lab&#34;
+ldap_guest2_mail: &#34;guest2@pygrn.lab&#34;
+
+ldap_tw1zr_pass: &#34;fu9F4yzKH3&#34;
+ldap_guest1_pass: &#34;Ln9CQMsDZA&#34;
+ldap_guest2_pass: &#34;bKwDKP6z57&#34;
+
+ldap_admin_pass: &#34;2hJmj7TFrz&#34;
+ldap_config_pass: &#34;bTu5njqLLd&#34;
+ldap_readonly_pass: &#34;Drq8nNEG6C&#34;
+</code></pre><p>If everything looks good on those three files run the playbook and give it a couple minutes to finish deploying our new containers:</p>
+<pre tabindex="0"><code>$ ansible-playbook playbook.yml
+</code></pre><p>Assuming everything went well, let&rsquo;s test our new e-mail service.</p>
+<p>Landing screen from the browser:</p>
+<p><img src="/blog/sysadmin-playground/9.png" alt=""></p>
+<p>Let&rsquo;s login as any of the users in our <strong>LDAP</strong> server and send an e-mail to any other user to test if everything is working correctly.</p>
+<p>In the following picture I&rsquo;ve logged in as <strong>tw1zr</strong> and I&rsquo;m sending an e-mail to <strong>guest1</strong>:</p>
+<p><img src="/blog/sysadmin-playground/10.png" alt=""></p>
+<p>Now in this picture I logged in as <strong>guest1</strong> and we can see the e-mail is received, perfect.</p>
+<p><img src="/blog/sysadmin-playground/11.png" alt=""></p>
+<p>Now I&rsquo;ll use <strong>sendEmail</strong> to send an e-mail from the command line. Let&rsquo;s authenticate as <strong>guest1</strong> and send something to <strong>tw1zr</strong>, <strong>ssh</strong> into any of the virtual machines and issue the following command:</p>
+<pre tabindex="0"><code>$ sendEmail -o tls=yes -xu guest1@pygrn.lab -xp Ln9CQMsDZA -f guest1@pygrn.lab -t tw1zr@pygrn.lab -s watts.pygrn.lab:587 -u &#34;test using sendEmail&#34; -m &#34;This message was sent from the command line using sendEmail.&#34;
+</code></pre><p>Login as <strong>tw1zr</strong> again, and we can see the e-mail was succesfully sent and received:</p>
+<p><img src="/blog/sysadmin-playground/12.png" alt=""></p>
+</article>
+</main>
+<footer>
+<p>licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0">cc by-nc-sa 4.0</a></br>
+standing up for freedom </p>
+</footer>
+</body>
+</html>
+

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>sysadmin playground part 06 | centralized logs | efym.net</title>
+	<link rel="canonical" href="http://efym.net/">
+	<link rel='alternate' type='application/rss+xml' title="efym.net RSS" href='/index.xml'>
+	<link rel='stylesheet' type='text/css' href='/style.css'>
+	<link rel="icon" href="/favicon.ico">
+	<meta name="description" content="Recreation of a lab environment with Terraform and Ansible.
+This post is part of a series, follow the links to the other parts: Sysadmin Playground Part 01 | Intro
+Sysadmin Playground Part 02 | Terraform and KVM
+Sysadmin Playground Part 03 | Ansible and Docker
+Sysadmin Playground Part 04 | OpenLDAP
+Sysadmin Playground Part 05 | Passwords and Ansible Vault
+Sysadmin Playground Part 06 | Centralized Logs
+Sysadmin Playground Part 07 | E-mail">
+	<meta name="keywords" content="sysadmin, linux">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="robots" content="index, follow">
+	<meta charset="utf-8">
+</head>
+<body>
+<div class="topbar">
+<nav class="menu">
+<div class="nav-left">
+ <ul>
+	<li><a href="/"><img class="logo" src="/svg/efym/net.svg" alt="logo"></a></li>
+  </ul>
+</div>
+<div class="nav-right">
+ <ul>
+	<li><a href="/contact">contact</a></li>
+	<li><a href="/support">support</a></li>
+	<li><a href="/services">services</a></li>
+	<li><a href="/blog">blog</a></li>
+	<li><a href="/about">about</a></li>
+  </ul>
+</div>
+</nav>
+</div>
+<main>
+<header><h1>Sysadmin Playground Part 06 | Centralized Logs</h1></header>
+<article>
+<p class="date">September 24, 2021</p>
+<p>Recreation of a lab environment with Terraform and Ansible.</p>
+<hr>
+<strong>This post is part of a series, follow the links to the other parts:</strong>
+<br>
+
+
+<a href="/blog/sysadmin-playground01-intro/">Sysadmin Playground Part 01 | Intro</a><br>
+
+<a href="/blog/sysadmin-playground02-terraform-kvm/">Sysadmin Playground Part 02 | Terraform and KVM</a><br>
+
+<a href="/blog/sysadmin-playground03-ansible-docker/">Sysadmin Playground Part 03 | Ansible and Docker</a><br>
+
+<a href="/blog/sysadmin-playground04-openldap/">Sysadmin Playground Part 04 | OpenLDAP</a><br>
+
+<a href="/blog/sysadmin-playground05-passwords-ansible-vault/">Sysadmin Playground Part 05 | Passwords and Ansible Vault</a><br>
+
+<a href="/blog/sysadmin-playground06-centralized-logs/">Sysadmin Playground Part 06 | Centralized Logs</a><br>
+
+<a href="/blog/sysadmin-playground07-email/">Sysadmin Playground Part 07 | E-mail</a><br>
+
+<a href="/blog/sysadmin-playground08-nfs/">Sysadmin Playground Part 08 | NFS</a><br>
+
+
+<hr>
+<h2 id="new-vms">New VMs</h2>
+<p>We&rsquo;re going to be picking up the pace a bit from now on. Up until now we&rsquo;ve been working on three different virtual machines, but as we deploy the upcoming services we&rsquo;ll be doing so in many different ones; so we&rsquo;ll deploy them now to have them ready.</p>
+<p>Refer to previous chapters if unsure of the exact process to do this with <strong>Terraform</strong>.</p>
+<p>Don&rsquo;t forget to update the KVM network settings on the hypervisor to give these new boxes an IP address through <strong>DHCP</strong>.</p>
+<p>Here&rsquo;s an updated topology diagram:</p>
+<p><img src="/blog/sysadmin-playground/8.png" alt=""></p>
+<p>The new boxes are VM-4 onwards.<br>
+Their names are largely irrelevant, I made these up randomly. But we have to keep them consistent with different configurations in many places, so if you&rsquo;re followig along and decide to use different names you will need to replace them in many places accross the config files.</p>
+<h2 id="syslog-ng-container">Syslog-ng container</h2>
+<p>In order to troubleshoot any problems in any server environment keeping track of the logs is extremely important; reading the logs is almost always the way to discover what went wrong and how to fix it.</p>
+<p>The most common way to centralize logs is with the Elastic Stack (which is comprised of <strong>Elasticsearch</strong>, <strong>Logstash</strong> and <strong>Kibana</strong>). I won&rsquo;t be deploying that today, I will instead use a much simpler and traditional <strong>syslog</strong> server.<br>
+<em>(It&rsquo;s entirely possible that I&rsquo;ll change my mind and deploy the ELK stack in the near future.)</em></p>
+<p>We&rsquo;re going to deploy a container running a <strong>Syslog-ng</strong> server listening on a specific port, then reconfigure every container we have deployed previously (and every future one) to use a different log driver than the default <strong>Docker</strong> one, the <strong>syslog</strong> logging driver will send every container&rsquo;s log to this server. This will allow us to have one place where we can go look at all the logs for every container in every virtual machine.</p>
+<p>Before starting with the <strong>Ansible</strong> configuration to deploy this container use <strong>certstrap</strong> to create a certificate which we&rsquo;ll use to encrypt the log packets being sent from every virtual machine to <strong>rumsi</strong>, which is the box I chose to host this container (refer to previous chapters for guidance on how to create the certificate).</p>
+<p>The container image we&rsquo;ll use is <a href="https://hub.docker.com/r/balabit/syslog-ng">balabit/syslog-ng</a></p>
+<p>Create a new role called <code>syslog-ng</code> and its tasks file, its content will be as follows:</p>
+<p><strong><code>$ cat roles/syslog-ng/tasks/main.yml</code></strong></p>
+<pre tabindex="0"><code>---
+- name: Set /srv/syslog-ng permissions
+  file:
+    dest: &#34;/srv/syslog-ng&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0755&#34;
+    state: &#34;directory&#34;
+
+- name: Copy syslog-ng.conf into /srv/syslog-ng/
+  copy:
+    src: &#34;files/syslog-ng/syslog-ng.conf&#34;
+    dest: &#34;/srv/syslog-ng/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0644&#34;
+
+- name: Syslog-ng container
+  docker_container:
+    name: &#34;syslog-ng&#34;
+    restart_policy: &#34;always&#34;
+    image: &#34;balabit/syslog-ng:latest&#34;
+    hostname: &#34;{{ ansible_hostname }}.pygrn.lab&#34;
+    published_ports:
+      - &#34;6514:6514&#34;
+    volumes:
+      - &#34;/etc/timezone:/etc/timezone:ro&#34;
+      - &#34;/etc/localtime:/etc/localtime:ro&#34;
+      - &#34;/srv/syslog-ng/syslog-ng.conf:/etc/syslog-ng/syslog-ng.conf&#34;
+      - &#34;/srv/syslog-ng/log-data:/var/log/syslog-ng&#34;
+      - &#34;/srv/syslog-ng/certs:/tmp/certs&#34;
+  register: &#34;syslogcontainerf&#34;
+
+- name: Copy syslog-ng public key into /srv/syslog-ng/cert/
+  copy:
+    src: &#34;CA/syslog-ng.crt&#34;
+    dest: &#34;/srv/syslog-ng/certs/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0644&#34;
+  register: &#34;logpubf&#34;
+
+- name: Copy syslog-ng private key into /srv/syslog-ng/certs/
+  copy:
+    src: &#34;CA/syslog-ng.key&#34;
+    dest: &#34;/srv/syslog-ng/certs/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0600&#34;
+  register: &#34;logprivf&#34;
+
+- name: Copy CA file into /srv/syslog-ng/certs/
+  copy:
+    src: &#34;CA/pygrn.lab-CA.crt&#34;
+    dest: &#34;/srv/syslog-ng/certs/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0644&#34;
+  register: &#34;logpygrncaf&#34;
+
+- name: Copy pygrn.lab-CA.crt to syslog-ng container
+  when: &#34;syslogcontainerf.changed&#34;
+  command:
+    cmd: &#34;docker cp /etc/ssl/pygrn.lab/pygrn.lab-CA.crt syslog-ng:/usr/local/share/ca-certificates/&#34;
+
+- name: Update syslog-ng container ca-certificates
+  when: &#34;syslogcontainerf.changed&#34;
+  command:
+    cmd: &#34;docker exec syslog-ng sh -c &#39;update-ca-certificates&#39;&#34;
+
+- name: Restart syslog-ng container if cert files are added/changed
+  when: &#34;logpygrncaf.changed or logpubf.changed or logprivf.changed&#34;
+  command:
+    cmd: &#34;docker restart syslog-ng&#34;
+</code></pre><p>Now we need to create the <strong>syslog-ng</strong> configuration file which will be mounted inside the container:</p>
+<p><strong><code>$ cat files/syslog-ng/syslog-ng.conf</code></strong></p>
+<pre tabindex="0"><code>@version: 3.29
+@include &#34;scl.conf&#34;
+
+# options
+options {
+        create_dirs(yes);
+        owner(root);
+        group(root);
+        perm(0644);
+        dir_owner(root);
+        dir_group(root);
+        dir_perm(0755);
+};
+
+# sources
+source s_local {
+        internal();
+};
+
+source s_network {
+        network (
+                ip-protocol(4)
+                transport(&#34;udp&#34;)
+                port(1514)
+        );
+        network (
+                ip-protocol(4)
+                transport(&#34;tcp&#34;)
+                port(1514)
+        );
+        network (
+                ip-protocol(4)
+                port(6514)
+                max-connections(500)
+                transport(&#34;tls&#34;)
+                tls (
+                        cert-file(&#34;/tmp/certs/syslog-ng.crt&#34;)
+                        key-file(&#34;/tmp/certs/syslog-ng.key&#34;)
+                        peer-verify(optional-untrusted)
+                )
+        );
+};
+
+# destinations
+destination d_local {
+        file(&#34;/var/log/messages&#34;);
+        file(&#34;/var/log/messages-kv.log&#34; template(&#34;$ISODATE $HOST $(format-welf --scope all-nv-pairs)\n&#34;) frac-digits(3));
+};
+
+destination d_per-host {
+        file(&#34;/var/log/syslog-ng/$HOST-$PROGRAM-$YEAR-$MONTH-$DAY.log&#34;);
+};
+
+# logs
+log {
+        source(s_local);
+        destination(d_local);
+};
+
+log {
+        source(s_network);
+        destination(d_per-host);
+};
+</code></pre><p>Now modify the containers being deployed in the <strong>openldap</strong> role updating the log driver and its options. Here&rsquo;s an excerpt of the <strong>phpLDAPadmin</strong> container with these directives in place:</p>
+<pre tabindex="0"><code>...
+- name: phpLDAPadmin container
+  when: &#34;ansible_hostname == ldap_webui_host_short&#34;
+  docker_container:
+    name: &#39;phpLDAPadmin&#39;
+    restart_policy: &#34;always&#34;
+    image: &#39;osixia/phpldapadmin:latest&#39;
+    log_driver: &#34;syslog&#34;
+    log_options:
+      syslog-address: &#34;tcp+tls://{{ syslog_ng_host }}:6514&#34;
+      tag: &#34;phpLDAPadmin&#34;
+    published_ports:
+      - &#34;6080:80&#34;
+...
+</code></pre><p>The lines that have been inserted are:</p>
+<pre tabindex="0"><code>    log_driver: &#34;syslog&#34;
+    log_options:
+      syslog-address: &#34;tcp+tls://{{ syslog_ng_host }}:6514&#34;
+      tag: &#34;phpLDAPadmin&#34;
+</code></pre><p>Do this for every container. The <strong>tag</strong> option will be the container&rsquo;s name; this is useful because the <strong>syslog-ng</strong> server uses the <code>$PROGRAM</code> variable in the log files&rsquo; names and that variable is substituted with whatever value we assign to <strong>tag</strong>.</p>
+<p>Use <code>ansible-vault edit</code> to add the <strong>syslog_ng_host</strong> variable into our variables file (<code>group_vars/all.yml</code>) the value of this variable is <strong>rumsi.pygrn.lab</strong>.</p>
+<p>It&rsquo;s important to keep in mind that by changing the logging driver <strong>Docker</strong> uses for these containers to a remote server (remote relative to each virtual machine) we&rsquo;re making it so that if this remote server is not running or is missconfigured the containers we try to deploy pointing at it to store their logs will fail to start. Therefore we&rsquo;ll put the <strong>syslog-ng</strong> role at the top of our <code>playbook.yml</code> so that it runs first.<br>
+It should look like this before we next run the playbook:</p>
+<p><strong><code>$ cat playbook.yml</code></strong></p>
+<pre tabindex="0"><code>---
+- name: &#34;Preparation&#34;
+  hosts: all
+  roles:
+    - &#34;global_preparation&#34;
+
+- name: &#34;Syslog-ng Server&#34;
+  hosts: log
+  gather_facts: &#34;no&#34;
+  roles:
+    - &#34;syslog-ng&#34;
+
+- name: &#34;OpenLDAP Server&#34;
+  hosts: ldap
+  gather_facts: &#34;no&#34;
+  roles:
+    - &#34;openldap&#34;
+
+- name: &#34;OpenLDAP Clients&#34;
+  hosts: all
+  gather_facts: &#34;no&#34;
+  roles:
+    - &#34;openldap-client&#34;
+
+- name: &#34;Finilizing&#34;
+  hosts: all
+  gather_facts: &#34;no&#34;
+  roles:
+    - &#34;global_finalizing&#34;
+</code></pre><p>We also need to update the <strong>hosts</strong> file:</p>
+<p><strong><code>$ cat hosts</code></strong></p>
+<pre tabindex="0"><code>[log]
+rumsi   ansible_host=192.168.122.8   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+
+[ldap\]
+doris   ansible_host=192.168.122.2   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+cutxn   ansible_host=192.168.122.3   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+cutxo   ansible_host=192.168.122.4   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+
+[undefined]
+boldh   ansible_host=192.168.122.5   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+grees   ansible_host=192.168.122.6   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+tyule   ansible_host=192.168.122.7   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+rumsi   ansible_host=192.168.122.8   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+watts   ansible_host=192.168.122.9   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+</code></pre><p>Note that I&rsquo;ve added every new box we spinned up to the hosts file too, but put them in a group called undefined for now because no containers will be deployed to them when we run the playbook again in a minute.</p>
+<h2 id="running-the-playbook">Running the playbook</h2>
+<p>After these changes we can run the playbook again.</p>
+<p>To test that the log driver and log server are working <strong>ssh</strong> into <strong>rumsi</strong> virtual machine and list the contents of the <strong>/srv/syslog-ng/log-data</strong> directory, you should see the log files there.</p>
+<blockquote>
+<p><strong>Note:</strong> I left out many steps of the instructions to do some of this because those steps have been covered in previous chapters. This isn&rsquo;t a very novice-friendly write-up and I won&rsquo;t be repeating obvious things constantly.</p>
+</blockquote>
+</article>
+</main>
+<footer>
+<p>licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0">cc by-nc-sa 4.0</a></br>
+standing up for freedom </p>
+</footer>
+</body>
+</html>
+

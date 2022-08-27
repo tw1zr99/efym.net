@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>sysadmin playground part 03 | ansible and docker | efym.net</title>
+	<link rel="canonical" href="http://efym.net/">
+	<link rel='alternate' type='application/rss+xml' title="efym.net RSS" href='/index.xml'>
+	<link rel='stylesheet' type='text/css' href='/style.css'>
+	<link rel="icon" href="/favicon.ico">
+	<meta name="description" content="Recreation of a lab environment with Terraform and Ansible
+This post is part of a series, follow the links to the other parts: Sysadmin Playground Part 01 | Intro
+Sysadmin Playground Part 02 | Terraform and KVM
+Sysadmin Playground Part 03 | Ansible and Docker
+Sysadmin Playground Part 04 | OpenLDAP
+Sysadmin Playground Part 05 | Passwords and Ansible Vault
+Sysadmin Playground Part 06 | Centralized Logs
+Sysadmin Playground Part 07 | E-mail">
+	<meta name="keywords" content="sysadmin, linux">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="robots" content="index, follow">
+	<meta charset="utf-8">
+</head>
+<body>
+<div class="topbar">
+<nav class="menu">
+<div class="nav-left">
+ <ul>
+	<li><a href="/"><img class="logo" src="/svg/efym/net.svg" alt="logo"></a></li>
+  </ul>
+</div>
+<div class="nav-right">
+ <ul>
+	<li><a href="/contact">contact</a></li>
+	<li><a href="/support">support</a></li>
+	<li><a href="/services">services</a></li>
+	<li><a href="/blog">blog</a></li>
+	<li><a href="/about">about</a></li>
+  </ul>
+</div>
+</nav>
+</div>
+<main>
+<header><h1>Sysadmin Playground Part 03 | Ansible and Docker</h1></header>
+<article>
+<p class="date">August 13, 2021</p>
+<p>Recreation of a lab environment with Terraform and Ansible</p>
+<hr>
+<strong>This post is part of a series, follow the links to the other parts:</strong>
+<br>
+
+
+<a href="/blog/sysadmin-playground01-intro/">Sysadmin Playground Part 01 | Intro</a><br>
+
+<a href="/blog/sysadmin-playground02-terraform-kvm/">Sysadmin Playground Part 02 | Terraform and KVM</a><br>
+
+<a href="/blog/sysadmin-playground03-ansible-docker/">Sysadmin Playground Part 03 | Ansible and Docker</a><br>
+
+<a href="/blog/sysadmin-playground04-openldap/">Sysadmin Playground Part 04 | OpenLDAP</a><br>
+
+<a href="/blog/sysadmin-playground05-passwords-ansible-vault/">Sysadmin Playground Part 05 | Passwords and Ansible Vault</a><br>
+
+<a href="/blog/sysadmin-playground06-centralized-logs/">Sysadmin Playground Part 06 | Centralized Logs</a><br>
+
+<a href="/blog/sysadmin-playground07-email/">Sysadmin Playground Part 07 | E-mail</a><br>
+
+<a href="/blog/sysadmin-playground08-nfs/">Sysadmin Playground Part 08 | NFS</a><br>
+
+
+<hr>
+<h2 id="configuring-ansible">Configuring Ansible</h2>
+<p>We&rsquo;re going to be running <strong>Ansible</strong> from the hypervisor box to configure and set up everything on our virtual machines. To do this we&rsquo;ll have to configure a few things.</p>
+<p>This is the output of <code>tree -L 1 -a</code> inside the directory where we hold all <strong>Ansible</strong> files:</p>
+<p><strong><code>$ tree -L 1 -a</code></strong></p>
+<pre tabindex="0"><code>.
+├── ansible.cfg
+├── files
+├── hosts
+├── playbook.yml
+└── roles
+</code></pre><p>These files/directories serve the following purposes:</p>
+<ul>
+<li><code>ansible.cfg</code> holds <strong>Ansible</strong> configurations for the current directory.</li>
+<li><code>files</code> This directory holds somes files which we will copy into our virtual machines.</li>
+<li><code>hosts</code> defines the IP, login user, <strong>ssh</strong> key among other things for every box <strong>Ansible</strong> will make deployments to.</li>
+<li><code>playbook.yml</code> This is the main file which defines every role that will be run.</li>
+<li><code>roles</code> This directory holds the roles and their respective tasks.</li>
+</ul>
+<p>This was an extremely simplified rundown of what some files do, if you&rsquo;re not familiar with how <strong>Ansible</strong> works you should go to its <a href="https://docs.ansible.com">documentation site</a> and get yourself acquainted with its inner workings.</p>
+<p>The <code>ansible.cfg</code> file just disables some deprecation warnings because of the syntax I like to use in YAML for the roles/tasks configuration files as well as settings the hosts file as the inventory; it should look like this:</p>
+<pre tabindex="0"><code>[defaults]
+deprecation_warnings = False
+inventory = hosts
+</code></pre><p>The self-explanatory named <code>hosts</code> file contains entries for the three virtual machines we have created and the groups they belong to (any host can belong to any number of groups). Here&rsquo;s an example of the structure with placeholder groups:</p>
+<pre tabindex="0"><code>[group1]
+doris   ansible_host=192.168.122.2   ansible_ssh_user=root   ansible_ssh_private_key_file=[/path/to/ssh/key]
+
+[group2]
+doris   ansible_host=192.168.122.2   ansible_ssh_user=root   ansible_ssh_private_key_file=[/path/to/ssh/key]
+cutxn   ansible_host=192.168.122.3   ansible_ssh_user=root   ansible_ssh_private_key_file=[/path/to/ssh/key]
+cutxo   ansible_host=192.168.122.4   ansible_ssh_user=root   ansible_ssh_private_key_file=[/path/to/ssh/key]
+</code></pre><p>The <code>playbook.yml</code> file is what we point to when running <strong>Ansible</strong>. Create the file like this for now, it will make sense further down this post.</p>
+<pre tabindex="0"><code>---
+- name: Preparation
+  hosts: all
+  roles:
+    - global_preparation
+</code></pre><p>Now the <strong>roles</strong> directory holds more directories inside of it, one for every service (mostly).</p>
+<p>Here&rsquo;s the output of <code>tree -L 4</code> inside the <strong>Ansible</strong> directory. I have created two roles for now, <code>global_preparation</code> and <code>global_finalizing</code>, these two roles will run on every virtual machine we deploy. They contain general user-defined configurations as well as the installation of some packages. For the moment we&rsquo;ll only be dealing with <code>global_preparation</code>.<br>
+<em>I intentionally left out the</em> <code>files</code> <em>directory and its contents for now, we&rsquo;ll look at that soon enough.</em></p>
+<p><strong><code>$ tree -L 4</code></strong></p>
+<pre tabindex="0"><code>.
+├── ansible.cfg
+├── hosts
+├── playbook.yml
+└── roles
+    ├── global\_finalizing
+    │   └── tasks
+    │       └── main.yml
+    └── global\_preparation
+        └── tasks
+            └── main.yml
+</code></pre><p>Firstly, let&rsquo;s modify <code>main.yml</code> for the <code>global_preparation</code> role to look like this:<br>
+<em>(The <code>global_finalizing</code> role we&rsquo;ll look at in the next chapter.)</em></p>
+<p><strong><code>$ cat roles/global_preparation/tasks/main.yml</code></strong></p>
+<pre tabindex="0"><code>---
+- name: Set timezone to Europe/London
+  timezone:
+    name: &#34;Europe/London&#34;
+
+- name: Update apt cache and install some packages
+  apt:
+    name: &#34;{{ item }}&#34;
+    state: &#34;latest&#34;
+    update_cache: yes
+  with_items:
+    - &#34;containerd&#34;
+    - &#34;docker-compose&#34;
+    - &#34;docker.io&#34;
+    - &#34;gpg&#34;
+    - &#34;htop&#34;
+    - &#34;neovim&#34;
+    - &#34;postgresql-client&#34;
+    - &#34;python3-docker&#34;
+    - &#34;ssl-cert&#34;
+
+- name: Add .bashrc to /etc/skel
+  copy:
+    src: &#34;.bashrc&#34;
+    dest: &#34;/etc/skel/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0644&#34;
+
+- name: Add .bashrc to /root/
+  copy:
+    src: &#34;.bashrc&#34;
+    dest: &#34;/root/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0644&#34;
+
+- name: Add .hushlogin to /etc/skel/
+  copy:
+    src: &#34;.hushlogin&#34;
+    dest: &#34;/etc/skel/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0644&#34;
+
+- name: Add .hushlogin /root/
+  copy:
+    src: &#34;.hushlogin&#34;
+    dest: &#34;/root/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0644&#34;
+
+- name: Add sudo-wheel to /etc/sudoers.d/
+  copy:
+    src: &#34;sudo-wheel&#34;
+    dest: &#34;/etc/sudoers.d/&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0600&#34;
+
+- name: Set /srv permissions
+  file:
+    dest: &#34;/srv&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: &#34;0700&#34;
+    state: &#34;directory&#34;
+</code></pre><p>I&rsquo;ll very quickly dissect each task:</p>
+<ul>
+<li>The first task sets the box&rsquo;s timezone to London. Feel free to modify this if it&rsquo;s not representative for you.</li>
+<li>The second task installs some packages that I use constantly; <strong>neovim</strong> as a text editor, <strong>htop</strong> in case we need to monitor system resources, and <strong>Docker</strong>.</li>
+<li>Third and fourth tasks add a custom <strong>.bashrc</strong> I made for this specific project, I&rsquo;ll show it below. The file gets added to <code>/etc/skel</code> and <code>/root</code> on the third and fourth tasks respectively. Read about <a href="https://www.thegeekdiary.com/understanding-the-etc-skel-directory-in-linux">skel</a> here if you don&rsquo;t know what it&rsquo;s for.</li>
+<li>The fifth and sixth tasks do the exact same as the previous two, but with the <code>.hushlogin</code> file, this file is only there to prevent useless drivel displayed on the terminal when login into the box through <strong>ssh</strong>.</li>
+<li>The seventh task adds the file <code>sudo-wheel</code> into <code>/etc/sudoers.d</code>, this file allows every member of the <strong>wheel</strong> group to perform sudo actions without having to provide a password.</li>
+<li>Lastly, the eighth task sets 700 ugo permission to <code>/srv</code>.</li>
+</ul>
+<p>We need to put the files being copied in a location where <strong>Ansible</strong> can read them to transfer them to our boxes.<br>
+This is what the <code>files</code> directory we ommited earlier is for.<br>
+I&rsquo;ll <strong>cat</strong> the files&rsquo; contents, create each of them inside this directory.</p>
+<p><strong><code>$ cat files/.bashrc</code></strong></p>
+<pre tabindex="0"><code># inputrc
+shopt -s autocd expand_aliases
+set -o vi
+bind -m vi-command &#39;Control-l: clear-screen&#39;
+bind -m vi-insert &#39;Control-l: clear-screen&#39;
+set completion-ignore-case On
+set show-mode-in-prompt off
+
+# path
+export PATH=/usr/local/bin:/usr/bin:/bin:/sbin:/usr/sbin:/bin
+
+# editor
+export EDITOR=nvim
+
+# aliases
+alias v=&#39;nvim&#39;
+alias grep=&#39;grep --color=auto&#39;
+alias ls=&#39;ls --color=auto&#39;
+alias ll=&#39;ls -lh&#39;
+alias la=&#39;ls -ah&#39;
+alias lla=&#39;ls -alh&#39;
+alias nets=&#39;netstat -tulpn&#39;
+alias md=&#39;mkdir -p&#39;
+alias tp=&#39;htop&#39;
+alias dpurge=&#39;docker stop $(docker ps -aq) &amp;&amp; docker rm $(docker ps -aq)&#39;
+
+# prompt
+if [ $EUID -eq 0 ]; then
+        export PS1=&#34;\[\e[31m\]\u\[\e[m\]@\h:\[\e[34m\]\w\[\e[m\] \[\e[31m\]\\$\[\e[m\] &#34;
+        [[ $SSH_CONNECTION ]] &amp;&amp; export PS1=&#34;\[\e[31m\]\u\[\e[m\]@\h:\[\e[34m\]\w\[\e[33m\] (ssh) \[\e[31m\]\\$\[\e[m\] &#34;
+else
+        export PS1=&#34;\[\e[32m\]\u\[\e[m\]@\h:\[\e[34m\]\w\[\e[m\] \[\e[32m\]\\$\[\e[m\] &#34;
+        [[ $SSH_CONNECTION ]] &amp;&amp; export PS1=&#34;\[\e[32m\]\u\[\e[m\]@\h:\[\e[34m\]\w\[\e[33m\] (ssh) \[\e[32m\]\\$\[\e[m\] &#34;
+fi
+</code></pre><p>I&rsquo;m not going to go into detail about the contents of this since it&rsquo;s basic <strong>Linux</strong> stuff.<br>
+It sets <strong>vi</strong> keybinds for the shell, defines some aliases, sets the content of <code>$PATH</code>, <code>$EDITOR</code> and <code>$PROMPT</code> (this last one is just for aesthetic purposes).</p>
+<p><strong><code>$ cat sudo-wheel</code></strong><br>
+<code>%wheel ALL=(ALL) NOPASSWD: ALL</code></p>
+<p><code>.hushlogin</code> is just an empty file, we can simply <strong>touch</strong> it and that&rsquo;s enough.</p>
+<p><code>$ touch files/.hushlogin</code></p>
+<p>Here&rsquo;s the output of <code>tree -L 4 -a</code> inside the <strong>Ansible</strong> directory again, this time with the <code>files</code> directory and the three files we just discussed inside it.</p>
+<p><strong><code>$ tree -L 4 -a</code></strong></p>
+<pre tabindex="0"><code>.
+├── ansible.cfg
+├── files
+│   ├── .bashrc
+│   ├── .hushlogin
+│   └── sudo-wheel
+├── hosts
+├── playbook.yml
+└── roles
+    ├── global_finalizing
+    │   └── tasks
+    │       └── main.yml
+    └── global_preparation
+        └── tasks
+            └── main.yml
+</code></pre><h2 id="first-run-of-the-playbook">First run of the playbook</h2>
+<p>We should now be ready to run our <strong>Ansible</strong> playbook for the first time against the three VMs we have prepared. It won&rsquo;t do much for now other than install some packages and set some custom shell parameters, but we&rsquo;re going to be using <strong>Ansible</strong> a lot throughout this write-up so it is important to have the fundamentals working quickly.</p>
+<p><code>$ ansible-playbook playbook.yml</code></p>
+<p>Let <strong>Ansible</strong> run, once it finishes read the output to see if there were any errors or anything else.<br>
+Afterwards, <strong>ssh</strong> into any of the boxes and make sure your changes were applied, it will be readily apparent because the prompt will be different.</p>
+<h2 id="certificate-authority">Certificate Authority</h2>
+<p>We will be using <strong>TLS</strong> to encrypt the traffic at the application level whenever possible throughout this write-up (always) because duhh; so we&rsquo;ll need to create a Certificate Authority and certificates for every service deployed.<br>
+Explanations about <strong>SSL/TLS</strong> and certificates are way out of scope for what I&rsquo;m writing so I&rsquo;ll just assume anyone reading is at least somewhat familiar with how a <strong>PKI</strong> works.</p>
+<p>We could do it perfectly fine using <strong>OpenSSL</strong> but there&rsquo;s a wrapper for it that makes it slightly more convenient, <a href="https://github.com/square/certstrap">certstrap</a>. Follow the link, download it and compile it (read the source code first if you&rsquo;re inclined to do so).</p>
+<p>Let&rsquo;s generate our Certificate Authority:</p>
+<p><code>$ ./certstrap init --common-name &quot;pygrn.lab-CA&quot;</code></p>
+<p>These certificate files will be inside a directory called <strong>out</strong> within the <code>certstrap</code> directory.</p>
+<p>Everytime we deploy a new service we&rsquo;ll come back and generate a certificate for it using <strong>certstrap</strong>.<br>
+Copy (or move) these files into <code>path/to/ansible/files/CA/</code> now and after creating every new one.</p>
+<p>Also let&rsquo;s append these lines into the <code>global_preparation</code> role so it creates a dedicated directory in each VM for us to store our certificates and to copy our certificate authority into it, as well as adding our CA file into the machine&rsquo;s trusted cert store:</p>
+<pre tabindex="0"><code>- name: Set /etc/ssl/pygrn.lab permissions
+  file:
+    state: &#34;directory&#34;
+    dest: &#34;/etc/ssl/pygrn.lab&#34;
+    owner: &#34;root&#34;
+    group: &#34;ssl-cert&#34;
+    mode: &#34;0775&#34;
+
+- name: Copy pygrn.lab-CA.crt into /etc/ssl/pygrn.lab/
+  copy:
+    src: &#34;CA/pygrn.lab-CA.crt&#34;
+    dest: &#34;/etc/ssl/pygrn.lab/&#34;
+    owner: &#34;root&#34;
+    group: &#34;ssl-cert&#34;
+    mode: &#34;0664&#34;
+
+- name: Copy pygrn.lab-CA.crt into /usr/local/share/ca-certificates/
+  copy:
+    src: &#34;CA/pygrn.lab-CA.crt&#34;
+    dest: &#34;/usr/local/share/ca-certificates/&#34;
+    owner: &#34;root&#34;
+    group: &#34;ssl-cert&#34;
+    mode: &#34;0664&#34;
+  register: &#34;certf&#34;
+
+- name: Update ca-certificates if pygrn.lab-CA.crt is added
+  when: &#34;certf.changed&#34;
+  command:
+    cmd: &#34;update-ca-certificates&#34;
+</code></pre><h2 id="integrating-docker-with-ansible">Integrating Docker with Ansible</h2>
+<p>If everything we have done up to this point has worked well we should now be ready to start using <strong>Ansible</strong> to spin up <strong>Docker</strong> containers.</p>
+<blockquote>
+<p><strong>Note to the reader:</strong> If this is your first time using <strong>Ansible</strong> then the previous sentence couldn&rsquo;t be any further away from the truth, I expect no total novices will stomach much of what I&rsquo;m writing here; but in case you are in fact a novice and have the inclination to follow along with this write-up, it would probably be better to pause this project and play with <strong>Ansible</strong> (and maybe <strong>Docker</strong> too) for a couple weeks before continuing. Personally, I learned a lot about it by making a playbook which deploys my personal dotfiles to all my boxes (desktop, laptop and a bunch of servers including headless VPSs) I recommend people starting out to do something similar.</p>
+<p>Or you can completely disregard what I just said and follow along as best you can.</p>
+</blockquote>
+<p>I&rsquo;ve waited until this point to acknowledge that our second and third virtual machines have very similar names, this is because they will be running a master/master <strong>LDAP</strong> authentication server pair (they could have literally any name, I just chose to name them like so to keep them visually related). Having this in mind we will deploy a front-end <strong>PHP</strong> webapp to manage <strong>LDAP</strong> servers to the first box (<strong>doris</strong>), we&rsquo;ll do most of our setup from the terminal anyway but this webapp helps visualizing the way <strong>LDAP</strong> works and inspecting its properties.</p>
+<p>First, let&rsquo;s create a certificate for our <strong>OpenLDAP</strong> server and its <strong>PHP</strong> front-end:</p>
+<p><code>$ ./certstrap request-cert --common-name &quot;openldap&quot; --domain *.pygrn.lab</code></p>
+<p>Sign the certificate request with the certificate authority:</p>
+<p><code>$ ./certstrap sign openldap --CA pygrn.lab-CA</code></p>
+<p>It&rsquo;s worth noting that I used <strong>.pygrn.lab</strong> as domain name for the certificate, this is what&rsquo;s called a wildcard certificate and it means that it will be valid for every sub-domain of <strong>pygrn.lab</strong>. So in actuality we could just use one certificate for every service if we wanted to, but I won&rsquo;t be doing that.</p>
+<p>Now let&rsquo;s create a new role called <code>openldap</code> and the <code>tasks/main.yml</code> inside of it looking like this:</p>
+<p><strong><code>$ cat roles/openldap/tasks/main.yml</code></strong></p>
+<pre tabindex="0"><code>---
+- name: Set /srv/phpLDAPadmin permissions
+  when: &#34;ansible_hostname == &#39;doris&#39;&#34;
+  file:
+    dest: &#34;/srv/openldap&#34;
+    owner: &#34;root&#34;
+    group: &#34;root&#34;
+    mode: 0755
+    state: &#34;directory&#34;
+
+- name: Set /srv/phpLDAPadmin/certs permissions
+  when: &#34;ansible_hostname == &#39;doris&#39;&#34;
+  file:
+    dest: &#34;/srv/phpLDAPadmin/certs&#34;
+    owner: &#34;911&#34;
+    group: &#34;911&#34;
+    mode: &#34;0755&#34;
+    state: &#34;directory&#34;
+
+- name: Copy pygrn.lab-CA.crt into /srv/phpLDAPadmin/certs/
+  when: &#34;ansible_hostname == &#39;doris&#39;&#34;
+  copy:
+    src: &#34;CA/pygrn.lab-CA.crt&#34;
+    dest: &#34;/srv/phpLDAPadmin/certs/&#34;
+    owner: &#34;33&#34;
+    group: &#34;33&#34;
+    mode: &#34;0600&#34;
+
+- name: Copy openldap.crt into /srv/phpLDAPadmin/certs/
+  when: &#34;ansible_hostname == &#39;doris&#39;&#34;
+  copy:
+    src: &#34;CA/openldap.crt&#34;
+    dest: &#34;/srv/phpLDAPadmin/certs/&#34;
+    owner: &#34;33&#34;
+    group: &#34;33&#34;
+    mode: &#34;0600&#34;
+
+- name: Copy openldap.key into /srv/phpLDAPadmin/certs/
+  when: &#34;ansible_hostname == &#39;doris&#39;&#34;
+  copy:
+    src: &#34;CA/openldap.key&#34;
+    dest: &#34;/srv/phpLDAPadmin/certs/&#34;
+    owner: &#34;33&#34;
+    group: &#34;33&#34;
+    mode: &#34;0600&#34;
+
+- name: phpLDAPadmin container
+  when: &#34;ansible_hostname == &#39;doris&#39;&#34;
+  docker_container:
+    name: &#39;phpLDAPadmin&#39;
+    restart_policy: &#34;always&#34;
+    image: &#39;osixia/phpldapadmin:latest&#39;
+    published_ports:
+      - &#34;6080:80&#34;
+    env:
+      PHPLDAPADMIN_LDAP_HOSTS: &#34;#PYTHON2BASH:[{&#39;cutxn.pygrn.lab&#39;: [{&#39;server&#39;: [{&#39;tls&#39;: True}]},{&#39;login&#39;: [{&#39;bind_id&#39;: &#39;cn=admin,dc=pygrn,dc=lab&#39;}]}]}, {&#39;cutxo.pygrn.lab&#39;: [{&#39;server&#39;: [{&#39;tls&#39;: True}]},{&#39;login&#39;:
+[{&#39;bind_id&#39;: &#39;cn=admin,dc=pygrn,dc=lab&#39;}]}]}]&#34;
+      PHPLDAPADMIN_HTTPS: &#34;false&#34;
+      PHPLDAPADMIN_LDAP_CLIENT_TLS: &#34;true&#34;
+      PHPLDAPADMIN_LDAP_CLIENT_TLS_REQCERT: &#34;demand&#34;
+      PHPLDAPADMIN_LDAP_CLIENT_TLS_CA_CRT_FILENAME: &#34;pygrn.lab-CA.crt&#34;
+      PHPLDAPADMIN_LDAP_CLIENT_TLS_CRT_FILENAME: &#34;postgresdb.crt&#34;
+      PHPLDAPADMIN_LDAP_CLIENT_TLS_KEY_FILENAME: &#34;postgresdb.key&#34;
+    volumes:
+      - &#34;/etc/timezone:/etc/timezone:ro&#34;
+      - &#34;/etc/localtime:/etc/localtime:ro&#34;
+      - &#34;/srv/phpLDAPadmin/certs:/container/service/ldap-client/assets/certs&#34;
+</code></pre><p>The conditional directive <code>when: &quot;ansible_hostname == 'doris'&quot;</code> means a task will only run on the virtual machine whose hostname is <strong>doris</strong>.<br>
+The first few tasks create and set permissions for <code>/srv/phpLDAPadmin</code> directory and copy the <strong>TLS</strong> files we just created into it.<br>
+With our files in place the next task defines a <strong>Docker</strong> container called <strong>phpLDAPadmin</strong>.<br>
+The <strong>Docker</strong> image being used is <a href="https://github.com/osixia/docker-phpLDAPadmin">docker-phpLDAPadmin</a>.<br>
+Read through every line to get a sense of how it&rsquo;s done, feel free to change the port we&rsquo;re mapping from the host (6080) to the container (80) to access the webapp.<br>
+The environment variables of the container (<strong>env</strong>) are used to define some options:</p>
+<ul>
+<li><code>PHPLDAPADMIN_LDAP_HOSTS</code>: Sets the hosts our <strong>PHP</strong> front-end will connect to, these are our VMs two and three: <strong>cutxn</strong> and <strong>cutxo</strong> respectively.</li>
+<li><code>PHPLDAPADMIN_HTTPS</code>: Disables https connectivity (it&rsquo;s important to understand that https will be disabled from whichever computer we use to open this webapp in a browser and the entry point of the <strong>Docker</strong> container. We are NOT disabling encryption. Moreover, if this environment was even remotely close to production and the packets to authenticate to this webapp had to go through the internet I would 100% put it behind an nginx reverse proxy; in which case it would still make sense to have this variable set to false since the packets would be routed through the loopback NIC or a Unix socket&hellip; but I digress.)</li>
+<li><code>PHPLDAPADMIN_LDAP_CLIENT\_TLS</code>: Enables TLS between the <strong>Docker</strong> container running the webapp and the <strong>LDAP</strong> servers we will spin up next.</li>
+<li><code>PHPLDAPADMIN_LDAP_CLIENT_TLS_REQCERT</code>: Makes it so that <strong>TLS</strong> certificates are strictly checked against the certificate authority.</li>
+<li><code>PHPLDAPADMIN_LDAP_CLIENT_TLS_CA_CRT_FILENAME</code>: Name of the certificate authority file (earlier in the role it gets copied into <code>/srv/phpADMIN/certs</code> and that directory gets mounted as a volume to the container in <code>/container/service/ldap-client/assets/certs</code>. Files in this location can be input here without full path.</li>
+<li><code>PHPLDAPADMIN_LDAP_CLIENT_TLS_CRT_FILENAME</code>: Same as above but for the certificate file.</li>
+<li><code>PHPLDAPADMIN_LDAP_CLIENT_TLS_KEY_FILENAME</code>: Same thing, key file.</li>
+</ul>
+<p>We need to append some lines to our <code>playbook.yml</code> file, it should look like this altogether:</p>
+<pre tabindex="0"><code>- name: &#34;Preparation&#34;
+  hosts: all
+  roles:
+    - &#34;global_preparation&#34;
+
+- name: &#34;OpenLDAP Server&#34;
+  hosts: ldap
+  gather_facts: &#34;no&#34;
+  roles:
+    - &#34;openldap&#34;
+</code></pre><p>And also let&rsquo;s change the placeholder groups in our <strong>hosts</strong> file for real ones, actually just one for now:</p>
+<pre tabindex="0"><code>[ldap]
+doris   ansible_host=192.168.122.2   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+cutxn   ansible_host=192.168.122.3   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+cutxo   ansible_host=192.168.122.4   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
+</code></pre><p>These changes put our three VMs in a group called <strong>ldap</strong>. We do this because the second play in our playbook will only run on the members of the group <strong>ldap</strong>. This is not particularly important right now since we only have three VMs and they all have to do with the <strong>openldap</strong> role, but later on when we deploy more services through different roles it will become very useful to segregate hosts like this.</p>
+<p>Once this is all in place let&rsquo;s run our playbook again:</p>
+<p><code>$ ansible-playbook playbook.yml</code></p>
+<p>Assuming the playbook ran properly we can now access <strong>phpLDAPadmin</strong>.</p>
+<p>To do this I&rsquo;m going to create an <strong>ssh</strong> tunnel from my desktop computer where I&rsquo;m working on all this to the virtual machine running inside my hypervisor. This is accomplished with a local port-forward like so:</p>
+<p><code>$ ssh -L 6080:192.168.122.2:6080 root@[IP of hypervisor] -N</code></p>
+<p>Now we open a browser on our desktop, go to <strong>localhost:6080</strong> and we should see something like this:</p>
+<p><img src="/blog/sysadmin-playground/3.png" alt=""></p>
+<p>Looking good so far. Right now we won&rsquo;t be able to log into the <strong>LDAP</strong> server because we haven&rsquo;t configured it yet. In the next post we will setup the master/master replication pair we spoke of before.</p>
+</article>
+</main>
+<footer>
+<p>licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0">cc by-nc-sa 4.0</a></br>
+standing up for freedom </p>
+</footer>
+</body>
+</html>
+

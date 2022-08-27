@@ -1,0 +1,15 @@
+{{ partial "header.html" . -}}
+<header><h1 id="tag_headline">{{ .Title | title | lower }}</h1></header>
+<article>
+{{ .Content -}}
+<ul>
+{{ range ( where .Site.RegularPages "Type" "blog" | first 3 ) }}
+<li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+{{end}}
+<br>
+<div style="display: flex; justify-content: flex-end">
+<a href='/feed.xml' type='application/rss+xml'><img class='icon' src='/svg/rss.svg'> RSS feed</a>
+</div>
+</ul>
+</article>
+{{- partial "footer.html" . }}

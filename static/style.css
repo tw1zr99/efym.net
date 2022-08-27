@@ -1,0 +1,417 @@
+/*@font-face { font-family: metropolis-regular; src: url('fonts/metropolis-regular.otf'); }*/
+@font-face { font-family: open-sans: url('fonts/open-sans-regular.ttf'); }
+@font-face { font-family: ubuntu-mono: url('fonts/ubuntu-mono.ttf'); }
+@font-face { font-family: heebo-bold: url('fonts/heebo-bold.ttf'); }
+
+html {
+    font-size: 100%;
+    -ms-text-size-adjust: 100%;
+    overflow-y: scroll;
+    -webkit-text-size-adjust: 100%;
+}
+
+b, strong {
+    color: #646464;
+}
+
+body {
+    background: #2f2f2f;
+    color: #fff;
+    font-family: "open-sans-regular", sans-serif;
+    font-size: 16px;
+    height: 100%;
+    line-height: 1.5em;
+    margin: auto;
+    max-width: 62em;
+    padding: 1em;
+}
+
+/*###*/
+
+img {
+	max-width: 100% ;
+}
+
+header h1 {
+	text-align: center ;
+}
+
+footer {
+	text-align: center ;
+	clear: both ;
+}
+
+a {
+    color: #6086c1;;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #aaa;
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+a:visited {
+    color: #6086c1;;
+}
+
+blockquote {
+    border-left: 0.5em #eee solid;
+    color: #a39fa2;
+    margin: 0;
+    padding-left: 3em;
+}
+
+.service {
+  margin-right: 0.4em;
+  position: relative;
+  text-align: left;
+  width: 320px;
+}
+
+.card_crypto {
+    height: 430px;
+    margin: 7px;
+	max-width: 250px;
+    padding: 8px;
+    position: relative;
+    text-align: center;
+}
+
+.card_desktop {
+	border: 0;
+    margin: 3px;
+	max-width: 240px;
+    position: relative;
+    text-align: center;
+}
+
+.container {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: left;
+	min-width: 100%;
+}
+
+.container-center {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	min-width: 100%;
+}
+
+footer {
+    font-size: 13px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 600;
+    line-height: 1em;
+}
+
+h1 {
+    font-size: 1.5em;
+}
+
+h2 {
+    font-size: 1.2em;
+    margin-top: 2em;
+    text-decoration: underline;
+}
+
+h3 {
+    font-size: 2em;
+}
+
+h4 {
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+h5 {
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+h6 {
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+hr {
+	border: 0;
+    height: 1px;
+    background: #333;
+    background-image: -webkit-linear-gradient(left, #333, #ccc, #333);
+    background-image: -moz-linear-gradient(left, #333, #ccc, #333);
+    background-image: -ms-linear-gradient(left, #333, #ccc, #333);
+    background-image: -o-linear-gradient(left, #333, #ccc, #333);
+}
+
+img {
+    border: 0;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+}
+
+img.logo {
+    max-height: 50px
+}
+
+img.icon {
+    display: inline;
+	height: 22px;
+	margin-bottom: 4px;
+	vertical-align: middle;
+	width: 22px;
+}
+
+img.service {
+    display: inline;
+	height: 40px;
+	margin-bottom: 4px;
+	vertical-align: middle;
+	width: 40px;
+}
+
+a.service {
+  border-radius: 10px;
+  color: #ffffff !important;
+  display: inline-block;
+  padding-left: 8px;
+  text-decoration: none;
+  width: 95%;
+  line-height: 3em;
+  font-size: 20px;
+}
+
+back.service {
+  border-radius: 10px;
+  color: #ffffff !important;
+  display: inline-block;
+  padding-left: 8px;
+  text-decoration: none;
+  width: 100%;
+  line-height: 3em;
+  font-size: 20px;
+}
+
+a.service:hover {
+  background-color: rgba(0, 0, 0, 0.3) !important;
+}
+
+ul.service {
+  list-style-type: none;
+}
+ul {
+  list-style-type: disc;
+  margin: 20px 20px 20px 20px;
+  padding: 0;
+}
+nav ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    overflow: hidden;
+}
+
+nav ul li {
+    display: inline-block;
+    list-style-type: none;
+}
+
+nav > div > ul > li > a {
+    display: block;
+    line-height: 2em;
+	padding: 0.5em 0em;
+    text-decoration: none;
+}
+
+nav > div.nav-right > ul > li > a {
+    padding: 0.5em 0.5em;
+}
+
+nav > div > ul > li > a:hover {
+	color: #aaa !important;
+}
+
+div.topbar {
+    margin-bottom: 30px;
+}
+
+.nav-left {
+    float: left;
+}
+
+.nav-left ul li {
+    float: left;
+}
+
+.nav-right ul li {
+    float: right;
+}
+
+p.crypto {
+	word-break: break-all;
+	font-weight: bold;
+}
+
+p.date {
+    font-size: 13px;
+    color: #666;
+}
+
+p.time {
+    font-size: 13px;
+    color: #979797;
+}
+
+p.tags {
+    font-size: 12px;
+    color: #666;
+}
+
+p.desc {
+    font-size: 14px;
+}
+
+p.index_text {
+	font-size: 20;
+	line-height: 1.2;
+}
+
+p.index_headline {
+	font-size: 7vw;
+	font-family: "heebo-bold", sans-serif;
+	line-height: 1;
+	padding-bottom: 10px;
+	text-align: center;
+    text-shadow: 1px 1px 1px #666666;
+}
+
+#tag_headline {
+	font-size: 7vw;
+	font-family: "heebo-bold", sans-serif;
+	line-height: 1;
+	padding-bottom: 10px;
+	text-align: center;
+    text-shadow: 1px 1px 1px #666666;
+}
+
+p.pygrn_series_nav {
+    font-size: 15;
+	line-height: 1.4;
+}
+
+code {
+	background: #c4c4c4ae;
+	color: #222222;
+	display: inline-block;
+	font-family: "ubuntu-mono", monospace;
+	padding: 2px 8px;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+}
+
+pre > code {
+	display: block;
+}
+
+table {
+	width: 280px;
+    text-align: left;
+	margin: auto;
+}
+
+table.center {
+    margin: 0 auto;
+}
+
+th {
+	font-weight: inherit;
+}
+
+td.left {
+    vertical-align: top;
+	text-align: right;
+}
+
+td.right {
+    vertical-align: top;
+	text-align: left;
+}
+
+ul.articles {
+    list-style: none;
+    padding: 0;
+}
+
+.view_hide {
+	margin-left: 1.4em;
+	line-height: 2em;
+}
+
+/*media queries*/
+@media screen and (min-width: 1px) {
+    .card {
+        width: 90%;
+    }
+
+    .cardrun {
+        width: 90%;
+    }
+
+    code {
+        font-size: 3.0vw;
+    }
+
+    pre.code {
+        font-size: 3.0vw;
+    }
+
+    .topbar {
+        font-size: 12px;
+    }
+
+    p.index_headline {
+        font-size: 9vw;
+    }
+}
+
+@media screen and (min-width: 600px) {
+    code {
+        font-size: 16px;
+    }
+
+    pre.code {
+        font-size: 16px;
+    }
+
+    p.index_headline {
+        font-size: 7vw;
+    }
+
+@media screen and (min-width: 1000px) {
+    article {
+        margin: 50px 0;
+    }
+    .card {
+        width: 290px;
+    }
+
+    .cardrun {
+        width: 290px;
+    }
+
+    .topbar {
+        font-size: 19px;
+	}
+}
