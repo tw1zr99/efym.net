@@ -5,6 +5,8 @@ tags: ['sysadmin', 'linux']
 ---
 Recreation of a lab environment with Terraform and Ansible.
 
+<!--more-->
+
 * * *
 
 {{< sysadmin-playground >}}

@@ -1,9 +1,11 @@
 ---
-title: "Sysadmin Playground Part 06 | Centralized Logs"
+title: "Sysadmin Playground Part 06 | Centralized Logs 📄"
 date: 2021-09-24T15:38:24+01:00
 tags: [ 'sysadmin', 'linux' ]
 ---
-Recreation of a lab environment with Terraform and Ansible.
+Configure Docker containers to send their logs to a centralized location for analysis and long term storage.
+
+<!--more-->
 
 * * *
 
@@ -263,7 +265,7 @@ We also need to update the **hosts** file:
 [log]
 rumsi   ansible_host=192.168.122.8   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
 
-[ldap\]
+[ldap]
 doris   ansible_host=192.168.122.2   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
 cutxn   ansible_host=192.168.122.3   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
 cutxo   ansible_host=192.168.122.4   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
@@ -282,6 +284,6 @@ Note that I've added every new box we spinned up to the hosts file too, but put 
 
 After these changes we can run the playbook again.
 
-To test that the log driver and log server are working **ssh** into **rumsi** virtual machine and list the contents of the **/srv/syslog-ng/log-data** directory, you should see the log files there.
+To test that the log driver and log server are working **ssh** into **rumsi** virtual machine and list the contents of the `/srv/syslog-ng/log-data` directory, you should see the log files there.
 
 > **Note:** I left out many steps of the instructions to do some of this because those steps have been covered in previous chapters. This isn't a very novice-friendly write-up and I won't be repeating obvious things constantly.

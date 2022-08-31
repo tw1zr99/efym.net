@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>nighttime backups | efym.net</title>
+	<title>nighttime backups 💾 | efym.net</title>
 	<link rel="canonical" href="http://efym.net/">
 	<link rel='alternate' type='application/rss+xml' title="efym.net RSS" href='/index.xml'>
 	<link rel='stylesheet' type='text/css' href='/style.css'>
 	<link rel="icon" href="/favicon.ico">
-	<meta name="description" content="The system I use to backup config files from all my boxes.
-When you&rsquo;re like me and try to self-host as many of the services you use as humanly possible, having a reliable backup system is imperative. I have already lost my configs more times than I&rsquo;d care to admit so I wrote a couple scripts to automate the process.
-I run a server in my house which acts as a NAS and a central location to automate various things including backups.">
+	<meta name="description" content="The system I use to backup config files from all my boxes.">
 	<meta name="keywords" content="linux, backups, bash">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="robots" content="index, follow">
@@ -24,17 +22,17 @@ I run a server in my house which acts as a NAS and a central location to automat
 </div>
 <div class="nav-right">
  <ul>
-	<li><a href="/contact">contact</a></li>
-	<li><a href="/support">support</a></li>
-	<li><a href="/services">services</a></li>
-	<li><a href="/blog">blog</a></li>
-	<li><a href="/about">about</a></li>
+	<li><a href="/contact">📠 contact</a></li>
+	<li><a href="/support">💸 support</a></li>
+	<li><a href="/services">🖥️ services</a></li>
+	<li><a href="/blog">📝 blog</a></li>
+	<li><a href="/about">👤 about</a></li>
   </ul>
 </div>
 </nav>
 </div>
 <main>
-<header><h1>Nighttime Backups</h1></header>
+<header><h1>Nighttime Backups 💾</h1></header>
 <article>
 <p class="date">August 24, 2020</p>
 <p>The system I use to backup config files from all my boxes.</p>
@@ -146,8 +144,7 @@ export RCLONE_CONFIG_PASS=$(cat /etc/borg_keys/rclone)
 
 rclone -v sync /mnt/drives/oasis/backups backblaze:tw1zr-backups
 </code></pre><p>Here I added a couple killswitches at the beginning to make sure borg and rclone don&rsquo;t run at the same time, also to prevent 2 instances of the same script interfering with eachother.</p>
-<p>As you may have realised these scripts require for you to define the boxes which will be backed up and also the way I wrote them assumes these boxes are configured in the ssh config file and set up with public key authentication. It is also assumed that the borg repositories are already in place and rclone has been configured with an encrypted config file, which in my case also resides at <code>/etc/borg_keys</code></p>
-</article>
+<p>As you may have realised these scripts require for you to define the boxes which will be backed up and also the way I wrote them assumes these boxes are configured in the ssh config file and set up with public key authentication. It is also assumed that the borg repositories are already in place and rclone has been configured with an encrypted config file, which in my case also resides at <code>/etc/borg_keys</code></p></article>
 </main>
 <footer>
 <p>licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0">cc by-nc-sa 4.0</a></br>

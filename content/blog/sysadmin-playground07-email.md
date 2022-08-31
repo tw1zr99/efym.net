@@ -1,9 +1,11 @@
 ---
-title: "Sysadmin Playground Part 07 | E-mail"
+title: "Sysadmin Playground Part 07 | E-mail ✉️"
 date: 2021-09-26T17:28:08+01:00
 tags: [ 'sysadmin', 'linux' ]
 ---
-Recreation of a lab environment with Terraform and Ansible.
+Create and configure an internal e-mail system for intra-site communication and alerts.
+
+<!--more-->
 
 * * *
 

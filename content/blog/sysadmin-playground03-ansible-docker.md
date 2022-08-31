@@ -1,9 +1,11 @@
 ---
-title: "Sysadmin Playground Part 03 | Ansible and Docker"
+title: "Sysadmin Playground Part 03 | Ansible and Docker 📦"
 date: 2021-08-13T04:44:02+01:00
 tags: [ 'sysadmin', 'linux' ]
 ---
-Recreation of a lab environment with Terraform and Ansible
+Initialize and understand your Ansible environment to configure the virtual machines and deploy docker containers.
+
+<!--more-->
 
 * * *
 

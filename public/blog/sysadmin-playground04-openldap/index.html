@@ -1,19 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>sysadmin playground part 04 | openldap | efym.net</title>
+	<title>sysadmin playground part 04 | openldap 👥 | efym.net</title>
 	<link rel="canonical" href="http://efym.net/">
 	<link rel='alternate' type='application/rss+xml' title="efym.net RSS" href='/index.xml'>
 	<link rel='stylesheet' type='text/css' href='/style.css'>
 	<link rel="icon" href="/favicon.ico">
-	<meta name="description" content="Recreation of a lab environment with Terraform and Ansible.
-This post is part of a series, follow the links to the other parts: Sysadmin Playground Part 01 | Intro
-Sysadmin Playground Part 02 | Terraform and KVM
-Sysadmin Playground Part 03 | Ansible and Docker
-Sysadmin Playground Part 04 | OpenLDAP
-Sysadmin Playground Part 05 | Passwords and Ansible Vault
-Sysadmin Playground Part 06 | Centralized Logs
-Sysadmin Playground Part 07 | E-mail">
+	<meta name="description" content="Manage global and centralized user accounts for multiple machines and services.">
 	<meta name="keywords" content="sysadmin, linux">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="robots" content="index, follow">
@@ -29,20 +22,20 @@ Sysadmin Playground Part 07 | E-mail">
 </div>
 <div class="nav-right">
  <ul>
-	<li><a href="/contact">contact</a></li>
-	<li><a href="/support">support</a></li>
-	<li><a href="/services">services</a></li>
-	<li><a href="/blog">blog</a></li>
-	<li><a href="/about">about</a></li>
+	<li><a href="/contact">📠 contact</a></li>
+	<li><a href="/support">💸 support</a></li>
+	<li><a href="/services">🖥️ services</a></li>
+	<li><a href="/blog">📝 blog</a></li>
+	<li><a href="/about">👤 about</a></li>
   </ul>
 </div>
 </nav>
 </div>
 <main>
-<header><h1>Sysadmin Playground Part 04 | OpenLDAP</h1></header>
+<header><h1>Sysadmin Playground Part 04 | OpenLDAP 👥</h1></header>
 <article>
 <p class="date">August 16, 2021</p>
-<p>Recreation of a lab environment with Terraform and Ansible.</p>
+<p>Manage global and centralized user accounts for multiple machines and services.</p>
 <hr>
 <strong>This post is part of a series, follow the links to the other parts:</strong>
 <br>
@@ -50,19 +43,19 @@ Sysadmin Playground Part 07 | E-mail">
 
 <a href="/blog/sysadmin-playground01-intro/">Sysadmin Playground Part 01 | Intro</a><br>
 
-<a href="/blog/sysadmin-playground02-terraform-kvm/">Sysadmin Playground Part 02 | Terraform and KVM</a><br>
+<a href="/blog/sysadmin-playground02-terraform-kvm/">Sysadmin Playground Part 02 | Terraform and KVM 🖥</a><br>
 
-<a href="/blog/sysadmin-playground03-ansible-docker/">Sysadmin Playground Part 03 | Ansible and Docker</a><br>
+<a href="/blog/sysadmin-playground03-ansible-docker/">Sysadmin Playground Part 03 | Ansible and Docker 📦</a><br>
 
-<a href="/blog/sysadmin-playground04-openldap/">Sysadmin Playground Part 04 | OpenLDAP</a><br>
+<a href="/blog/sysadmin-playground04-openldap/">Sysadmin Playground Part 04 | OpenLDAP 👥</a><br>
 
-<a href="/blog/sysadmin-playground05-passwords-ansible-vault/">Sysadmin Playground Part 05 | Passwords and Ansible Vault</a><br>
+<a href="/blog/sysadmin-playground05-passwords-ansible-vault/">Sysadmin Playground Part 05 | Passwords and Ansible Vault 🔒</a><br>
 
-<a href="/blog/sysadmin-playground06-centralized-logs/">Sysadmin Playground Part 06 | Centralized Logs</a><br>
+<a href="/blog/sysadmin-playground06-centralized-logs/">Sysadmin Playground Part 06 | Centralized Logs 📄</a><br>
 
-<a href="/blog/sysadmin-playground07-email/">Sysadmin Playground Part 07 | E-mail</a><br>
+<a href="/blog/sysadmin-playground07-email/">Sysadmin Playground Part 07 | E-mail ✉️</a><br>
 
-<a href="/blog/sysadmin-playground08-nfs/">Sysadmin Playground Part 08 | NFS</a><br>
+<a href="/blog/sysadmin-playground08-nfs/">Sysadmin Playground Part 08 | NFS 💽</a><br>
 
 
 <hr>
@@ -510,8 +503,7 @@ guest2:yigo</p>
 <p>Authenticating as <strong>guest2</strong>: <img src="/blog/sysadmin-playground/7.2.png" alt=""></p>
 <p>None of these accounts were created on the <strong>Linux</strong> machines, <strong>Linux</strong> is just querying the <strong>LDAP</strong> server and allowing the posix accounts there to access the machine as if they were local, this is what our configuration files are accomplishing.<br>
 I also ran <code>sudo -l</code> as <strong>tw1zr</strong> to make sure our <strong>sudo</strong> privileges were working properly; we defined all the users in the wheel group to be able to run <strong>sudo</strong> commands without a password.</p>
-<p>Many services out there are designed to be compatible with <strong>LDAP</strong> authentication. We will likely use it again when we deploy further services.</p>
-</article>
+<p>Many services out there are designed to be compatible with <strong>LDAP</strong> authentication. We will likely use it again when we deploy further services.</p></article>
 </main>
 <footer>
 <p>licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0">cc by-nc-sa 4.0</a></br>

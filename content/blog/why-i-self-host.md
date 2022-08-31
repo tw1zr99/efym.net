@@ -5,6 +5,8 @@ tag: [ 'privacy' ]
 ---
 Thoughts on why I host the services I use.
 
+<!--more-->
+
 * * *
 
 ## Opening remarks

@@ -1,9 +1,11 @@
 ---
-title: "Digital Diseases"
+title: "Digital Diseases 🦠"
 date: 2021-05-04T20:10:47+01:00
 tags: [ 'privacy', 'bigtech' ]
 ---
 A few thoughts on why social media is a cancerous institution.
+
+<!--more-->
 
 * * *
 

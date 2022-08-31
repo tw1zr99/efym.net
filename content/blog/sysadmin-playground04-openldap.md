@@ -1,9 +1,11 @@
 ---
-title: "Sysadmin Playground Part 04 | OpenLDAP"
+title: "Sysadmin Playground Part 04 | OpenLDAP 👥"
 date: 2021-08-16T02:33:51+01:00
 tags: [ 'sysadmin', 'linux' ]
 ---
-Recreation of a lab environment with Terraform and Ansible.
+Manage global and centralized user accounts for multiple machines and services.
+
+<!--more-->
 
 * * *
 

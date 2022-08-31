@@ -1,9 +1,11 @@
 ---
-title: "Nighttime Backups"
+title: "Nighttime Backups 💾"
 date: 2020-08-24T14:10:20+01:00
 tags: [ 'linux', 'backups', 'bash' ]
 ---
 The system I use to backup config files from all my boxes.
+
+<!--more-->
 
 * * *
 

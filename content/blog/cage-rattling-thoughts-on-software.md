@@ -5,6 +5,8 @@ tags: [ 'free software' ]
 ---
 Quick and dirty ramblings about free software and the other, stupid and harmful type.
 
+<!--more-->
+
 * * *
 
 > Important definitions you should read and be acquainted with:

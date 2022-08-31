@@ -5,6 +5,8 @@ tags: [ 'linux' ]
 ---
 Notes on my Void Linux setup.
 
+<!--more-->
+
 * * *
 
 Recently I switched the linux distribution I use on my desktop and laptop to Void from Arch. I had used Void before but switched away from it because there were some packages I use missing from their repositories. That point hasn't really changed much, but I thought I'd give it another go anyway.

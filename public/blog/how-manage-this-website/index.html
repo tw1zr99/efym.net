@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>how i manage this website | efym.net</title>
+	<title>how i manage this website 🌐 | efym.net</title>
 	<link rel="canonical" href="http://efym.net/">
 	<link rel='alternate' type='application/rss+xml' title="efym.net RSS" href='/index.xml'>
 	<link rel='stylesheet' type='text/css' href='/style.css'>
 	<link rel="icon" href="/favicon.ico">
-	<meta name="description" content="Run-down of the process and tools I use to keep efym.net running.
-August 25, 2022
-Update: I no longer edit and deploy this website using this script, the post will remain around for archiving purposes.
-efym.net is currently built using Hugo. Static site generation Back when I was around 10 years old one of my older cousins showed me how to make very simple web pages by writing the html tags directly into a file with notepad.">
+	<meta name="description" content="Run-down of the process and tools I use to keep efym.net running.">
 	<meta name="keywords" content="html, bash">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="robots" content="index, follow">
@@ -25,17 +22,17 @@ efym.net is currently built using Hugo. Static site generation Back when I was a
 </div>
 <div class="nav-right">
  <ul>
-	<li><a href="/contact">contact</a></li>
-	<li><a href="/support">support</a></li>
-	<li><a href="/services">services</a></li>
-	<li><a href="/blog">blog</a></li>
-	<li><a href="/about">about</a></li>
+	<li><a href="/contact">📠 contact</a></li>
+	<li><a href="/support">💸 support</a></li>
+	<li><a href="/services">🖥️ services</a></li>
+	<li><a href="/blog">📝 blog</a></li>
+	<li><a href="/about">👤 about</a></li>
   </ul>
 </div>
 </nav>
 </div>
 <main>
-<header><h1>How I manage this website</h1></header>
+<header><h1>How I manage this website 🌐</h1></header>
 <article>
 <p class="date">October 29, 2021</p>
 <p>Run-down of the process and tools I use to keep efym.net running.</p>
@@ -125,9 +122,8 @@ esac
 </code></pre><p>The script has comments at the beginning of each section, so it should be fairly easy to identify exactly how I accomplish the tasks mentioned before (provided the reader is familiar with <strong>bash</strong>).</p>
 <p>Another thing I wanted to have automatically generated based on the current available posts is an <strong>RSS</strong> feed. I personally use <strong>RSS</strong> all the time to keep up with various news, videos, etc. I think <strong>RSS</strong> is very understimated nowadays but since I use it I wanted my site to prioritize it. So the <strong>deploy-site</strong> wrapper script also generates an <strong>RSS</strong> feed and adds links to it at the top of the <strong>blogindex.html</strong> page and in the &ldquo;Recent articles&rdquo; section in the <strong>index.html</strong> page.<br>
 The <strong>RSS</strong> feed links point here: <a href="/feed">https://efym.net/feed</a> and can be accessed with any available client.</p>
-<p>After all those things are done, the script rebuilds the site files using <strong>ssg</strong> then prompts me whether I&rsquo;d like to <strong>rsync</strong> the <strong>dst</strong> directory straight to the server hosting the website on the Internet, usually I&rsquo;ll run the script many times before I actually upload the work I&rsquo;ve done.</p>
-<p>I also keep all of these files in a <strong>git</strong> repository on my <strong>Gitea</strong> instance: <a href="https://gitea.efym.net/tw1zr/efym.net-ssg">gitea.efym.net/efym.net-ssg</a> feel free to browse, everything is Free Software under the <strong>GPLv3</strong> license.</p>
-</article>
+<p>After all those things are done, the script rebuilds the site files using <strong>ssg</strong> then prompts me whether I&rsquo;d like to <strong>rsync</strong> the <code>dst</code> directory straight to the server hosting the website on the Internet, usually I&rsquo;ll run the script many times before I actually upload the work I&rsquo;ve done.</p>
+<p>I also keep all of these files in a <strong>git</strong> repository on my <strong>Gitea</strong> instance: <a href="https://gitea.efym.net/tw1zr/efym.net-ssg">gitea.efym.net/efym.net-ssg</a> feel free to browse, everything is Free Software under the <strong>GPLv3</strong> license.</p></article>
 </main>
 <footer>
 <p>licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0">cc by-nc-sa 4.0</a></br>

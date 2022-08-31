@@ -1,9 +1,11 @@
 ---
-title: "How I manage this website"
+title: "How I manage this website 🌐"
 date: 2021-10-29T11:16:10+01:00
 tags: [ 'html', 'bash' ]
 ---
 Run-down of the process and tools I use to keep efym.net running.
+
+<!--more-->
 
 * * *
 
@@ -110,6 +112,6 @@ The script has comments at the beginning of each section, so it should be fairly
 Another thing I wanted to have automatically generated based on the current available posts is an **RSS** feed. I personally use **RSS** all the time to keep up with various news, videos, etc. I think **RSS** is very understimated nowadays but since I use it I wanted my site to prioritize it. So the **deploy-site** wrapper script also generates an **RSS** feed and adds links to it at the top of the **blogindex.html** page and in the "Recent articles" section in the **index.html** page.  
 The **RSS** feed links point here: [https://efym.net/feed](/feed) and can be accessed with any available client.
 
-After all those things are done, the script rebuilds the site files using **ssg** then prompts me whether I'd like to **rsync** the **dst** directory straight to the server hosting the website on the Internet, usually I'll run the script many times before I actually upload the work I've done.
+After all those things are done, the script rebuilds the site files using **ssg** then prompts me whether I'd like to **rsync** the `dst` directory straight to the server hosting the website on the Internet, usually I'll run the script many times before I actually upload the work I've done.
 
 I also keep all of these files in a **git** repository on my **Gitea** instance: [gitea.efym.net/efym.net-ssg](https://gitea.efym.net/tw1zr/efym.net-ssg) feel free to browse, everything is Free Software under the **GPLv3** license.

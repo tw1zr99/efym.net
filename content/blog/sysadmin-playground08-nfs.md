@@ -1,9 +1,11 @@
 ---
-title: "Sysadmin Playground Part 08 | NFS"
+title: "Sysadmin Playground Part 08 | NFS 💽"
 date: 2021-09-28T08:12:26+01:00
 tags: [ 'sysadmin', 'linux' ]
 ---
-Recreation of a lab environment with Terraform and Ansible.
+COnsolidate users' home directory in an external storage server and make it seamlessly accessible from every machine on the network.
+
+<!--more-->
 
 * * *
 

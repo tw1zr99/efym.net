@@ -6,9 +6,7 @@
 	<link rel='alternate' type='application/rss+xml' title="efym.net RSS" href='/index.xml'>
 	<link rel='stylesheet' type='text/css' href='/style.css'>
 	<link rel="icon" href="/favicon.ico">
-	<meta name="description" content="Notes on my Void Linux setup.
-Recently I switched the linux distribution I use on my desktop and laptop to Void from Arch. I had used Void before but switched away from it because there were some packages I use missing from their repositories. That point hasn&rsquo;t really changed much, but I thought I&rsquo;d give it another go anyway.
-Note: There&rsquo;s a guide on the Void Linux docs page about an installation with encrypted boot, I personally choose to leave my boot partition unencrypted because I think it&rsquo;s largely useless to do it; and also because the Grub bootloader doesn&rsquo;t support luks2 scheme so you&rsquo;re forced to use luks1 which I&rsquo;m uncomfortable with.">
+	<meta name="description" content="Notes on my Void Linux setup.">
 	<meta name="keywords" content="linux">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="robots" content="index, follow">
@@ -24,11 +22,11 @@ Note: There&rsquo;s a guide on the Void Linux docs page about an installation wi
 </div>
 <div class="nav-right">
  <ul>
-	<li><a href="/contact">contact</a></li>
-	<li><a href="/support">support</a></li>
-	<li><a href="/services">services</a></li>
-	<li><a href="/blog">blog</a></li>
-	<li><a href="/about">about</a></li>
+	<li><a href="/contact">📠 contact</a></li>
+	<li><a href="/support">💸 support</a></li>
+	<li><a href="/services">🖥️ services</a></li>
+	<li><a href="/blog">📝 blog</a></li>
+	<li><a href="/about">👤 about</a></li>
   </ul>
 </div>
 </nav>
@@ -138,8 +136,7 @@ UUID=[UUIDOFsda1]           /boot    vfat      defaults         0       0
 <pre tabindex="0"><code>chroot # exit
 </code></pre><pre tabindex="0"><code>root@void-live:~ # umount -R /mn
 </code></pre><pre tabindex="0"><code>root@void-live:~ # reboot
-</code></pre><p>Right now you should have a fully functioning Void install, I use an Ansible playbook which sets up my entire graphical environment, dotfiles and other things; maybe I&rsquo;ll publish that soon.</p>
-</article>
+</code></pre><p>Right now you should have a fully functioning Void install, I use an Ansible playbook which sets up my entire graphical environment, dotfiles and other things; maybe I&rsquo;ll publish that soon.</p></article>
 </main>
 <footer>
 <p>licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0">cc by-nc-sa 4.0</a></br>

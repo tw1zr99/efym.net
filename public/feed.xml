@@ -5,13 +5,189 @@
 	<description>Recent content on efym.net</description>
 	<generator>Hugo -- gohugo.io</generator>
 	<language>en-us</language>
-	<lastBuildDate>Fri, 29 Oct 2021 11:16:10 +0100</lastBuildDate>
+	<lastBuildDate>Sat, 20 Aug 2022 11:11:59 +0100</lastBuildDate>
     
         <atom:link href="http://efym.net/feed.xml" rel="self" type="application/rss+xml" />
 	
 	
 	<item>
-		<title>How I manage this website</title>
+		<title>🚦 Traefik Configuration and easy routing</title>
+		<link>http://efym.net/blog/traefik-configuration/</link>
+		<pubDate>Sat, 20 Aug 2022 11:11:59 +0100</pubDate>
+		
+		<guid>http://efym.net/blog/traefik-configuration/</guid>
+		<description>&lt;p&gt;My configuration for Traefik with wildcard TLS certificates.&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;When you host several Internet-facing services it&amp;rsquo;s of the utmost importance the encrypt the traffic with TLS. It&amp;rsquo;s also very convient to have wildcard certificates and have subdomains redirect traffic to specific ports so that no more than 1 TLS certificate is needed. It&amp;rsquo;s also true that subdomains look better aesthetically than a domain name with ports; exhibit A:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://git.efym.net&#34;&gt;https://git.efym.net&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://efym.net:3000&#34;&gt;https://efym.net:3000&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Most people will agree that the first option is more pleasing to the eye, also easier to remember.&lt;br&gt;
+Not to mention that you won&amp;rsquo;t have port shortages of any kind, which also makes running multiple instances of the same service at the same time a breeze. I do this a lot while performing tests.&lt;/p&gt;
+&lt;h2 id=&#34;domain-registrar-dns&#34;&gt;Domain registrar DNS&lt;/h2&gt;
+&lt;p&gt;The first thing we need to do is point the registrar&amp;rsquo;s DNS records for our domain name to the IP address of the box we&amp;rsquo;re hosting &lt;strong&gt;Traefik&lt;/strong&gt; on, I am using &lt;a href=&#34;https://njal.la&#34;&gt;Njalla&lt;/a&gt; and created these records:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://efym.net/blog/traefik-configuration/1.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;reverse-proxy-with-traefik&#34;&gt;Reverse proxy with Traefik&lt;/h2&gt;
+&lt;p&gt;We&amp;rsquo;re going to use what&amp;rsquo;s called a reverse proxy. There are a few options in this department, in the past I&amp;rsquo;ve used &lt;a href=&#34;https://nginx.com&#34;&gt;nginx&lt;/a&gt; and it works well; but my preferred one is &lt;a href=&#34;https://traefik.io&#34;&gt;Traefik&lt;/a&gt;. I&amp;rsquo;ve been using it for around 2 years with no problems at all.&lt;br&gt;
+Its configuration isn&amp;rsquo;t the easiest, but once it has been properly set up it is—in my opinion—the best reverse proxy when working with containers since it can dynamically route traffic to the correct endpoints by reading labels assigned to &lt;strong&gt;Docker&lt;/strong&gt; containers on creation.&lt;/p&gt;
+&lt;p&gt;We&amp;rsquo;re going to deploy &lt;strong&gt;Traefik&lt;/strong&gt; using &lt;strong&gt;docker-compose&lt;/strong&gt;. I will assume the reader can install &lt;strong&gt;docker-compose&lt;/strong&gt; by themselves.&lt;/p&gt;
+&lt;p&gt;There are 2 ways to way to write down &lt;strong&gt;Traefik&lt;/strong&gt; configuration, we can do it on with config files or by appending lines to the &lt;strong&gt;command&lt;/strong&gt; directive in the &lt;strong&gt;docker-compose&lt;/strong&gt; file. I personally use config files so that&amp;rsquo;s what I&amp;rsquo;ll show here.&lt;/p&gt;
+&lt;p&gt;There are also 2 types of configuration instructions: static and dynamic. The static configurations are the ones under the &lt;strong&gt;command&lt;/strong&gt; directive or inside a file called &lt;code&gt;traefik.yml&lt;/code&gt;. Dynamic configurations go under the containers&amp;rsquo; labels or in any other file besides &lt;code&gt;traefik.yml&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Here&amp;rsquo;s a diagram to visualize the topology:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://efym.net/blog/traefik-configuration/2.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s create some directories to store &lt;strong&gt;Traefik&lt;/strong&gt; files:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;$ mkdir -p /srv/traefik/traefik-{config,ssl,logs}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Firstly let&amp;rsquo;s create our &lt;strong&gt;Traefik&lt;/strong&gt; static configuration file with this content:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;code&gt;$ cat /srv/traefik/traefik-config/traefik.yml&lt;/code&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+log:
+  level: INFO
+  format: common
+  filePath: /var/log/traefik/traefik.log
+
+accesslog:
+  format: common
+  filePath: /var/log/traefik/access.log
+
+api:
+  dashboard: true
+  insecure: true
+
+entryPoints:
+  web:
+    address: :80
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: :443
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: tw1zr@efym.net
+      storage: /ssl-certs/acme.json
+      caServer: &amp;#34;https://acme-v02.api.letsencrypt.org/directory&amp;#34;
+      dnsChallenge:
+        provider: njalla
+        delaybeforecheck: 10
+        resolvers:
+          - &amp;#34;9.9.9.9&amp;#34;
+
+tls:
+  options:
+    default:
+      minVersion: VersionTLS12
+
+providers:
+  docker:
+    exposedByDefault: false
+  file:
+    directory: /etc/traefik
+    watch: true
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;This static configuration file defines:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The log format and storage&lt;/li&gt;
+&lt;li&gt;Forced &lt;strong&gt;http&lt;/strong&gt; to &lt;strong&gt;https&lt;/strong&gt; redirection&lt;/li&gt;
+&lt;li&gt;Minimum TLS version accepted (here set to TLSv1.2)&lt;/li&gt;
+&lt;li&gt;Directory to watch for dynamic config files (set to &lt;code&gt;/etc/traefik&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;TLS certificate resolver&lt;br&gt;
+We&amp;rsquo;re going to use &lt;a href=&#34;https://letsencrypt.org&#34;&gt;Let&amp;rsquo;s Encrypt&lt;/a&gt; through a DNS challenge to obtain our wildcard certificate. It will be stored in ACME format in the &lt;code&gt;/ssl-certs/acme.json&lt;/code&gt; file as defined.&lt;br&gt;
+Also note that I set the &lt;strong&gt;provider&lt;/strong&gt; directive to &lt;strong&gt;njalla&lt;/strong&gt;, that&amp;rsquo;s because &lt;a href=&#34;https://njal.la&#34;&gt;Njalla&lt;/a&gt; is the domain registrar that I use. But this can be changed if you use another registrar. &lt;a href=&#34;https://doc.traefik.io/traefik/https/acme/&#34;&gt;Traefik has very good documentation on this&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The &lt;strong&gt;Njalla&lt;/strong&gt; provider needs one environment variables to be able to complete the DNS challenge, we will store this variables in a file called &lt;code&gt;traefik-env&lt;/code&gt; and later define it in our &lt;code&gt;docker-compose.yml&lt;/code&gt; file.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;code&gt;$ cat /srv/traefik/traefik-env&lt;/code&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;NJALLA_TOKEN=xxxxxxxxxxxxxxxxxxxx
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;(My real token has been redacted for obvious reasons.)&lt;/p&gt;
+&lt;p&gt;We will also create a dynamic config file to define middlewares. In this file we will define a basic auth middleware that will be used to authenticate to the &lt;strong&gt;Traefik&lt;/strong&gt; dashboard.&lt;/p&gt;
+&lt;p&gt;We can use &lt;code&gt;htpasswd&lt;/code&gt; to generate the basic auth credentials:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;$ htpasswd -nbB tw1zr xxxxx
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;(My real password has been replaced for &lt;strong&gt;&lt;code&gt;xxxxx&lt;/code&gt;&lt;/strong&gt;)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;code&gt;$ cat /srv/traefik/traefik-config/middlewares.yml&lt;/code&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;http:
+  middlewares:
+    traefik-auth:
+      basicAuth:
+        users:
+          - &amp;#34;tw1zr:$2y$05$H41PI9inzmhZcEOkUuTR7O74/7ADxZ/Z7.awyAhXB/lR3AHdNiPAu&amp;#34;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Now inside the base &lt;code&gt;/srv/traefik&lt;/code&gt; directory our &lt;code&gt;docker-compose.yml&lt;/code&gt; file should look like this:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;code&gt;$ cat /srv/traefik/docker-compose.yml&lt;/code&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;---
+version: &amp;#34;3.7&amp;#34;
+services:
+
+  traefik:
+    container_name: &amp;#34;traefik&amp;#34;
+    hostname: &amp;#34;traefik&amp;#34;
+    image: &amp;#34;traefik:latest&amp;#34;
+    restart: &amp;#34;unless-stopped&amp;#34;
+    ports:
+      - &amp;#34;80:80&amp;#34;
+      - &amp;#34;443:443&amp;#34;
+    env_file:
+      - &amp;#34;./traefik-env&amp;#34;
+    volumes:
+      - &amp;#34;/etc/localtime:/etc/localtime:ro&amp;#34;
+      - &amp;#34;/var/run/docker.sock:/var/run/docker.sock:ro&amp;#34;
+      - &amp;#34;./traefik-config:/etc/traefik&amp;#34;
+      - &amp;#34;./traefik-ssl:/ssl-certs&amp;#34;
+      - &amp;#34;./traefik-logs:/var/log/traefik&amp;#34;
+    labels:
+      - &amp;#34;traefik.enable=true&amp;#34;
+      - &amp;#34;traefik.http.routers.traefik.tls.certresolver=letsencrypt&amp;#34;
+      - &amp;#34;traefik.http.routers.traefik.tls.domains[0].main=efym.net&amp;#34;
+      - &amp;#34;traefik.http.routers.traefik.tls.domains[0].sans=*.efym.net&amp;#34;
+
+      - &amp;#34;traefik.http.routers.traefik.tls=true&amp;#34;
+      - &amp;#34;traefik.http.routers.traefik.service=api@internal&amp;#34;
+      - &amp;#34;traefik.http.routers.traefik.middlewares=traefik-auth@file&amp;#34;
+      - &amp;#34;traefik.http.routers.traefik.rule=Host(`traefik.efym.net`)&amp;#34;
+    networks:
+      - &amp;#34;rawr&amp;#34;
+
+networks:
+  rawr:
+    name: &amp;#34;rawr&amp;#34;
+    ipam:
+      driver: &amp;#34;default&amp;#34;
+      config:
+        - subnet: &amp;#34;10.3.0.0/24&amp;#34;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;With this file we&amp;rsquo;re telling &lt;strong&gt;Docker&lt;/strong&gt; to map ports 80 and 443 (&lt;strong&gt;http&lt;/strong&gt; and &lt;strong&gt;https&lt;/strong&gt; respectively) to the same ports in the container. Those ports are &lt;strong&gt;HTTP&lt;/strong&gt; standards, now when any &lt;strong&gt;HTTP&lt;/strong&gt; traffic hits the host machine it will be redirected to the &lt;strong&gt;Traefik&lt;/strong&gt; container; then &lt;strong&gt;Traefik&lt;/strong&gt; will forward that traffic to whatever endpoint we assign it using &lt;strong&gt;Docker&lt;/strong&gt; labels.&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;env_file&lt;/strong&gt; directive maps the &lt;code&gt;traefik-env&lt;/code&gt; file we created with enviroment variables so the container can use them when created.&lt;/p&gt;
+&lt;p&gt;We&amp;rsquo;re also mounting a few volumes, the reasoning is as follows:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;/etc/localtime&lt;/strong&gt;: TLS certificates are time-sensitive, it&amp;rsquo;s important to have the correct time inside the container that &lt;strong&gt;Traefik&lt;/strong&gt; is running in.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;/var/run/docker.sock&lt;/strong&gt;: Allows &lt;strong&gt;Traefik&lt;/strong&gt; to monitor the &lt;strong&gt;Docker&lt;/strong&gt; socket and dynamically configure itself based on container labels.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;./traefik-config&lt;/strong&gt;: Persistance of static and dynamic config files&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;./traefik-ssl&lt;/strong&gt;: Persistance of TLS certificates&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;./traefik-logs&lt;/strong&gt;: Persistance of logs generated by &lt;strong&gt;Traefik&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Now about the labels:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Enable &lt;strong&gt;Traefik&lt;/strong&gt; for this container as well as TLS&lt;/li&gt;
+&lt;li&gt;We assign the certificate resolver&amp;rsquo;s name that was defined in the static config file&lt;/li&gt;
+&lt;li&gt;Specify the domain name and all its subdomains (with &lt;code&gt;*&lt;/code&gt;, which stands for wildcard) that the certificate is going to be valid for&lt;/li&gt;
+&lt;li&gt;Enable the &lt;strong&gt;Traefik&lt;/strong&gt; web dashboard&lt;/li&gt;
+&lt;li&gt;Enable the middleware we created above for basic auth&lt;/li&gt;
+&lt;li&gt;Lastly we define the subdomain we want to root to this container (to the dashboard in this case)&lt;br&gt;
+(There&amp;rsquo;s no reason to define which port it gets routed to in this case, the dashboard is an internal &lt;strong&gt;Traefik&lt;/strong&gt; thing&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;At the end of the file we also specify a network named &lt;strong&gt;rawr&lt;/strong&gt;. Every container that will be routed to by &lt;strong&gt;Traefik&lt;/strong&gt; needs to share a network with it, the name of the network is arbitrary.&lt;/p&gt;
+&lt;p&gt;All that&amp;rsquo;s left to do now is change into &lt;code&gt;/srv/traefik&lt;/code&gt; directory and start the container with this command:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;$ docker-compose up -d
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Wait a minute or so for &lt;strong&gt;Traefik&lt;/strong&gt; to spin up and acquire the certificate, then if we open &lt;strong&gt;&lt;a href=&#34;https://traefik.efym.net&#34;&gt;https://traefik.efym.net&lt;/a&gt;&lt;/strong&gt; we should get a basic auth prompt, after entering the correct credentials we should see the &lt;strong&gt;Traefik&lt;/strong&gt; dashboard:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://efym.net/blog/traefik-configuration/3.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;My dashboard shows many more routers and services than a brand new install would because I have more stuff running.&lt;/p&gt;</description>
+	</item>
+	
+	<item>
+		<title>How I manage this website 🌐</title>
 		<link>http://efym.net/blog/how-manage-this-website/</link>
 		<pubDate>Fri, 29 Oct 2021 11:16:10 +0100</pubDate>
 		
@@ -103,13 +279,12 @@ esac
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;The script has comments at the beginning of each section, so it should be fairly easy to identify exactly how I accomplish the tasks mentioned before (provided the reader is familiar with &lt;strong&gt;bash&lt;/strong&gt;).&lt;/p&gt;
 &lt;p&gt;Another thing I wanted to have automatically generated based on the current available posts is an &lt;strong&gt;RSS&lt;/strong&gt; feed. I personally use &lt;strong&gt;RSS&lt;/strong&gt; all the time to keep up with various news, videos, etc. I think &lt;strong&gt;RSS&lt;/strong&gt; is very understimated nowadays but since I use it I wanted my site to prioritize it. So the &lt;strong&gt;deploy-site&lt;/strong&gt; wrapper script also generates an &lt;strong&gt;RSS&lt;/strong&gt; feed and adds links to it at the top of the &lt;strong&gt;blogindex.html&lt;/strong&gt; page and in the &amp;ldquo;Recent articles&amp;rdquo; section in the &lt;strong&gt;index.html&lt;/strong&gt; page.&lt;br&gt;
 The &lt;strong&gt;RSS&lt;/strong&gt; feed links point here: &lt;a href=&#34;http://efym.net/feed&#34;&gt;https://efym.net/feed&lt;/a&gt; and can be accessed with any available client.&lt;/p&gt;
-&lt;p&gt;After all those things are done, the script rebuilds the site files using &lt;strong&gt;ssg&lt;/strong&gt; then prompts me whether I&amp;rsquo;d like to &lt;strong&gt;rsync&lt;/strong&gt; the &lt;strong&gt;dst&lt;/strong&gt; directory straight to the server hosting the website on the Internet, usually I&amp;rsquo;ll run the script many times before I actually upload the work I&amp;rsquo;ve done.&lt;/p&gt;
-&lt;p&gt;I also keep all of these files in a &lt;strong&gt;git&lt;/strong&gt; repository on my &lt;strong&gt;Gitea&lt;/strong&gt; instance: &lt;a href=&#34;https://gitea.efym.net/tw1zr/efym.net-ssg&#34;&gt;gitea.efym.net/efym.net-ssg&lt;/a&gt; feel free to browse, everything is Free Software under the &lt;strong&gt;GPLv3&lt;/strong&gt; license.&lt;/p&gt;
-</description>
+&lt;p&gt;After all those things are done, the script rebuilds the site files using &lt;strong&gt;ssg&lt;/strong&gt; then prompts me whether I&amp;rsquo;d like to &lt;strong&gt;rsync&lt;/strong&gt; the &lt;code&gt;dst&lt;/code&gt; directory straight to the server hosting the website on the Internet, usually I&amp;rsquo;ll run the script many times before I actually upload the work I&amp;rsquo;ve done.&lt;/p&gt;
+&lt;p&gt;I also keep all of these files in a &lt;strong&gt;git&lt;/strong&gt; repository on my &lt;strong&gt;Gitea&lt;/strong&gt; instance: &lt;a href=&#34;https://gitea.efym.net/tw1zr/efym.net-ssg&#34;&gt;gitea.efym.net/efym.net-ssg&lt;/a&gt; feel free to browse, everything is Free Software under the &lt;strong&gt;GPLv3&lt;/strong&gt; license.&lt;/p&gt;</description>
 	</item>
 	
 	<item>
-		<title>Appalling Anysoftkeyboard Feature</title>
+		<title>Appalling Anysoftkeyboard ⌨️ Feature</title>
 		<link>http://efym.net/blog/appalling-anysoftkeyboard-feature/</link>
 		<pubDate>Wed, 13 Oct 2021 12:54:02 +0100</pubDate>
 		
@@ -133,17 +308,16 @@ In case you can&amp;rsquo;t be bothered to follow that link and read the entire 
 &lt;p&gt;It&amp;rsquo;s a shame, really. Because I liked it and I still think it&amp;rsquo;s a well coded piece of software with well implemented features, but I won&amp;rsquo;t stand to support the work of people who try to shove what they consider to be a &amp;ldquo;public safety issue&amp;rdquo; down my throat.&lt;/p&gt;
 &lt;p&gt;For the past few days I&amp;rsquo;ve been using &lt;a href=&#34;https://f-droid.org/en/packages/org.dslul.openboard.inputmethod.latin&#34;&gt;OpenBoard&lt;/a&gt; and it gets the job done, the layout is slightly less convenient as you can see in the pictures below (or maybe I&amp;rsquo;m just used to something different) but I&amp;rsquo;d very much rather a slight inconvenience while typing on my phone than having a constant reminder in my face about this years&amp;rsquo; flu.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;http://efym.net/blog/appalling-anysoftkeyboard-feature/3.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-&lt;p&gt;I would urge every software developer who might read this to please keep your application&amp;rsquo;s functionality focused on what you actually built it to do and do not use whatever platform you may have to push your social/political/economic/etc agenda unto your users.&lt;/p&gt;
-</description>
+&lt;p&gt;I would urge every software developer who might read this to please keep your application&amp;rsquo;s functionality focused on what you actually built it to do and do not use whatever platform you may have to push your social/political/economic/etc agenda unto your users.&lt;/p&gt;</description>
 	</item>
 	
 	<item>
-		<title>Sysadmin Playground Part 08 | NFS</title>
+		<title>Sysadmin Playground Part 08 | NFS 💽</title>
 		<link>http://efym.net/blog/sysadmin-playground08-nfs/</link>
 		<pubDate>Tue, 28 Sep 2021 08:12:26 +0100</pubDate>
 		
 		<guid>http://efym.net/blog/sysadmin-playground08-nfs/</guid>
-		<description>&lt;p&gt;Recreation of a lab environment with Terraform and Ansible.&lt;/p&gt;
+		<description>&lt;p&gt;COnsolidate users&amp;rsquo; home directory in an external storage server and make it seamlessly accessible from every machine on the network.&lt;/p&gt;
 &lt;hr&gt;
 &lt;strong&gt;This post is part of a series, follow the links to the other parts:&lt;/strong&gt;
 &lt;br&gt;
@@ -151,19 +325,19 @@ In case you can&amp;rsquo;t be bothered to follow that link and read the entire 
 
 &lt;a href=&#34;http://efym.net/blog/sysadmin-playground01-intro/&#34;&gt;Sysadmin Playground Part 01 | Intro&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground02-terraform-kvm/&#34;&gt;Sysadmin Playground Part 02 | Terraform and KVM&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground02-terraform-kvm/&#34;&gt;Sysadmin Playground Part 02 | Terraform and KVM 🖥&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground03-ansible-docker/&#34;&gt;Sysadmin Playground Part 03 | Ansible and Docker&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground03-ansible-docker/&#34;&gt;Sysadmin Playground Part 03 | Ansible and Docker 📦&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground04-openldap/&#34;&gt;Sysadmin Playground Part 04 | OpenLDAP&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground04-openldap/&#34;&gt;Sysadmin Playground Part 04 | OpenLDAP 👥&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground05-passwords-ansible-vault/&#34;&gt;Sysadmin Playground Part 05 | Passwords and Ansible Vault&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground05-passwords-ansible-vault/&#34;&gt;Sysadmin Playground Part 05 | Passwords and Ansible Vault 🔒&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground06-centralized-logs/&#34;&gt;Sysadmin Playground Part 06 | Centralized Logs&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground06-centralized-logs/&#34;&gt;Sysadmin Playground Part 06 | Centralized Logs 📄&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground07-email/&#34;&gt;Sysadmin Playground Part 07 | E-mail&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground07-email/&#34;&gt;Sysadmin Playground Part 07 | E-mail ✉️&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground08-nfs/&#34;&gt;Sysadmin Playground Part 08 | NFS&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground08-nfs/&#34;&gt;Sysadmin Playground Part 08 | NFS 💽&lt;/a&gt;&lt;br&gt;
 
 
 &lt;hr&gt;
@@ -561,17 +735,16 @@ ldap_readonly_pass: &amp;#34;Drq8nNEG6C&amp;#34;
 # logs
 syslog_ng_host: &amp;#34;rumsi.pygrn.lab&amp;#34;
 syslog_ng_host_short: &amp;#34;rumsi&amp;#34;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Run the playbook again after adjusting those files and that&amp;rsquo;s it. To test it we can create a test file inside the &lt;code&gt;/home&lt;/code&gt; directory of one machine and see if it&amp;rsquo;s replicated in the others.&lt;/p&gt;
-</description>
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Run the playbook again after adjusting those files and that&amp;rsquo;s it. To test it we can create a test file inside the &lt;code&gt;/home&lt;/code&gt; directory of one machine and see if it&amp;rsquo;s replicated in the others.&lt;/p&gt;</description>
 	</item>
 	
 	<item>
-		<title>Sysadmin Playground Part 07 | E-mail</title>
+		<title>Sysadmin Playground Part 07 | E-mail ✉️</title>
 		<link>http://efym.net/blog/sysadmin-playground07-email/</link>
 		<pubDate>Sun, 26 Sep 2021 17:28:08 +0100</pubDate>
 		
 		<guid>http://efym.net/blog/sysadmin-playground07-email/</guid>
-		<description>&lt;p&gt;Recreation of a lab environment with Terraform and Ansible.&lt;/p&gt;
+		<description>&lt;p&gt;Create and configure an internal e-mail system for intra-site communication and alerts.&lt;/p&gt;
 &lt;hr&gt;
 &lt;strong&gt;This post is part of a series, follow the links to the other parts:&lt;/strong&gt;
 &lt;br&gt;
@@ -579,19 +752,19 @@ syslog_ng_host_short: &amp;#34;rumsi&amp;#34;
 
 &lt;a href=&#34;http://efym.net/blog/sysadmin-playground01-intro/&#34;&gt;Sysadmin Playground Part 01 | Intro&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground02-terraform-kvm/&#34;&gt;Sysadmin Playground Part 02 | Terraform and KVM&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground02-terraform-kvm/&#34;&gt;Sysadmin Playground Part 02 | Terraform and KVM 🖥&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground03-ansible-docker/&#34;&gt;Sysadmin Playground Part 03 | Ansible and Docker&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground03-ansible-docker/&#34;&gt;Sysadmin Playground Part 03 | Ansible and Docker 📦&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground04-openldap/&#34;&gt;Sysadmin Playground Part 04 | OpenLDAP&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground04-openldap/&#34;&gt;Sysadmin Playground Part 04 | OpenLDAP 👥&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground05-passwords-ansible-vault/&#34;&gt;Sysadmin Playground Part 05 | Passwords and Ansible Vault&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground05-passwords-ansible-vault/&#34;&gt;Sysadmin Playground Part 05 | Passwords and Ansible Vault 🔒&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground06-centralized-logs/&#34;&gt;Sysadmin Playground Part 06 | Centralized Logs&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground06-centralized-logs/&#34;&gt;Sysadmin Playground Part 06 | Centralized Logs 📄&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground07-email/&#34;&gt;Sysadmin Playground Part 07 | E-mail&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground07-email/&#34;&gt;Sysadmin Playground Part 07 | E-mail ✉️&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground08-nfs/&#34;&gt;Sysadmin Playground Part 08 | NFS&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground08-nfs/&#34;&gt;Sysadmin Playground Part 08 | NFS 💽&lt;/a&gt;&lt;br&gt;
 
 
 &lt;hr&gt;
@@ -865,8 +1038,7 @@ ldap_readonly_pass: &amp;#34;Drq8nNEG6C&amp;#34;
 &lt;p&gt;Now I&amp;rsquo;ll use &lt;strong&gt;sendEmail&lt;/strong&gt; to send an e-mail from the command line. Let&amp;rsquo;s authenticate as &lt;strong&gt;guest1&lt;/strong&gt; and send something to &lt;strong&gt;tw1zr&lt;/strong&gt;, &lt;strong&gt;ssh&lt;/strong&gt; into any of the virtual machines and issue the following command:&lt;/p&gt;
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;$ sendEmail -o tls=yes -xu guest1@pygrn.lab -xp Ln9CQMsDZA -f guest1@pygrn.lab -t tw1zr@pygrn.lab -s watts.pygrn.lab:587 -u &amp;#34;test using sendEmail&amp;#34; -m &amp;#34;This message was sent from the command line using sendEmail.&amp;#34;
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Login as &lt;strong&gt;tw1zr&lt;/strong&gt; again, and we can see the e-mail was succesfully sent and received:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;http://efym.net/blog/sysadmin-playground/12.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-</description>
+&lt;p&gt;&lt;img src=&#34;http://efym.net/blog/sysadmin-playground/12.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;</description>
 	</item>
 	
 	<item>
@@ -909,17 +1081,16 @@ FAGMAN (&lt;strong&gt;F&lt;/strong&gt;acebook, &lt;strong&gt;A&lt;/strong&gt;ppl
 If you must use e-mail and know your way around Linux then I personally think self-hosting an e-mail service like any and every other service you use is the best solution if privacy is of importance.&lt;/p&gt;
 &lt;p&gt;Vincent Canfield of &lt;a href=&#34;https://cock.li&#34;&gt;cock.li&lt;/a&gt; has on his website a paragraph and a quote apparently taken from 4chan which are quite apt to describe what I&amp;rsquo;m trying to say about e-mail:&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;http://efym.net/blog/why-i-self-host/1.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-&lt;p&gt;There are also more specific services I host on the Internet or at home (always in a server which I have root access to) and the reason for those are largely the same ones I&amp;rsquo;ve already explained.&lt;/p&gt;
-</description>
+&lt;p&gt;There are also more specific services I host on the Internet or at home (always in a server which I have root access to) and the reason for those are largely the same ones I&amp;rsquo;ve already explained.&lt;/p&gt;</description>
 	</item>
 	
 	<item>
-		<title>Sysadmin Playground Part 06 | Centralized Logs</title>
+		<title>Sysadmin Playground Part 06 | Centralized Logs 📄</title>
 		<link>http://efym.net/blog/sysadmin-playground06-centralized-logs/</link>
 		<pubDate>Fri, 24 Sep 2021 15:38:24 +0100</pubDate>
 		
 		<guid>http://efym.net/blog/sysadmin-playground06-centralized-logs/</guid>
-		<description>&lt;p&gt;Recreation of a lab environment with Terraform and Ansible.&lt;/p&gt;
+		<description>&lt;p&gt;Configure Docker containers to send their logs to a centralized location for analysis and long term storage.&lt;/p&gt;
 &lt;hr&gt;
 &lt;strong&gt;This post is part of a series, follow the links to the other parts:&lt;/strong&gt;
 &lt;br&gt;
@@ -927,19 +1098,19 @@ If you must use e-mail and know your way around Linux then I personally think se
 
 &lt;a href=&#34;http://efym.net/blog/sysadmin-playground01-intro/&#34;&gt;Sysadmin Playground Part 01 | Intro&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground02-terraform-kvm/&#34;&gt;Sysadmin Playground Part 02 | Terraform and KVM&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground02-terraform-kvm/&#34;&gt;Sysadmin Playground Part 02 | Terraform and KVM 🖥&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground03-ansible-docker/&#34;&gt;Sysadmin Playground Part 03 | Ansible and Docker&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground03-ansible-docker/&#34;&gt;Sysadmin Playground Part 03 | Ansible and Docker 📦&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground04-openldap/&#34;&gt;Sysadmin Playground Part 04 | OpenLDAP&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground04-openldap/&#34;&gt;Sysadmin Playground Part 04 | OpenLDAP 👥&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground05-passwords-ansible-vault/&#34;&gt;Sysadmin Playground Part 05 | Passwords and Ansible Vault&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground05-passwords-ansible-vault/&#34;&gt;Sysadmin Playground Part 05 | Passwords and Ansible Vault 🔒&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground06-centralized-logs/&#34;&gt;Sysadmin Playground Part 06 | Centralized Logs&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground06-centralized-logs/&#34;&gt;Sysadmin Playground Part 06 | Centralized Logs 📄&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground07-email/&#34;&gt;Sysadmin Playground Part 07 | E-mail&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground07-email/&#34;&gt;Sysadmin Playground Part 07 | E-mail ✉️&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground08-nfs/&#34;&gt;Sysadmin Playground Part 08 | NFS&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground08-nfs/&#34;&gt;Sysadmin Playground Part 08 | NFS 💽&lt;/a&gt;&lt;br&gt;
 
 
 &lt;hr&gt;
@@ -1158,7 +1329,7 @@ It should look like this before we next run the playbook:&lt;/p&gt;
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;[log]
 rumsi   ansible_host=192.168.122.8   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
 
-[ldap\]
+[ldap]
 doris   ansible_host=192.168.122.2   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
 cutxn   ansible_host=192.168.122.3   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
 cutxo   ansible_host=192.168.122.4   ansible_ssh_user=root   ansible_ssh_private_key_file=/path/to/ssh/key
@@ -1172,20 +1343,19 @@ watts   ansible_host=192.168.122.9   ansible_ssh_user=root   ansible_ssh_private
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Note that I&amp;rsquo;ve added every new box we spinned up to the hosts file too, but put them in a group called undefined for now because no containers will be deployed to them when we run the playbook again in a minute.&lt;/p&gt;
 &lt;h2 id=&#34;running-the-playbook&#34;&gt;Running the playbook&lt;/h2&gt;
 &lt;p&gt;After these changes we can run the playbook again.&lt;/p&gt;
-&lt;p&gt;To test that the log driver and log server are working &lt;strong&gt;ssh&lt;/strong&gt; into &lt;strong&gt;rumsi&lt;/strong&gt; virtual machine and list the contents of the &lt;strong&gt;/srv/syslog-ng/log-data&lt;/strong&gt; directory, you should see the log files there.&lt;/p&gt;
+&lt;p&gt;To test that the log driver and log server are working &lt;strong&gt;ssh&lt;/strong&gt; into &lt;strong&gt;rumsi&lt;/strong&gt; virtual machine and list the contents of the &lt;code&gt;/srv/syslog-ng/log-data&lt;/code&gt; directory, you should see the log files there.&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; I left out many steps of the instructions to do some of this because those steps have been covered in previous chapters. This isn&amp;rsquo;t a very novice-friendly write-up and I won&amp;rsquo;t be repeating obvious things constantly.&lt;/p&gt;
-&lt;/blockquote&gt;
-</description>
+&lt;/blockquote&gt;</description>
 	</item>
 	
 	<item>
-		<title>Sysadmin Playground Part 05 | Passwords and Ansible Vault</title>
+		<title>Sysadmin Playground Part 05 | Passwords and Ansible Vault 🔒</title>
 		<link>http://efym.net/blog/sysadmin-playground05-passwords-ansible-vault/</link>
 		<pubDate>Sun, 29 Aug 2021 04:13:05 +0100</pubDate>
 		
 		<guid>http://efym.net/blog/sysadmin-playground05-passwords-ansible-vault/</guid>
-		<description>&lt;p&gt;Recreation of a lab environment with Terraform and Ansible&lt;/p&gt;
+		<description>&lt;p&gt;Generating hardened passwords and encrypting them with Ansible Vault.&lt;/p&gt;
 &lt;hr&gt;
 &lt;strong&gt;This post is part of a series, follow the links to the other parts:&lt;/strong&gt;
 &lt;br&gt;
@@ -1193,19 +1363,19 @@ watts   ansible_host=192.168.122.9   ansible_ssh_user=root   ansible_ssh_private
 
 &lt;a href=&#34;http://efym.net/blog/sysadmin-playground01-intro/&#34;&gt;Sysadmin Playground Part 01 | Intro&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground02-terraform-kvm/&#34;&gt;Sysadmin Playground Part 02 | Terraform and KVM&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground02-terraform-kvm/&#34;&gt;Sysadmin Playground Part 02 | Terraform and KVM 🖥&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground03-ansible-docker/&#34;&gt;Sysadmin Playground Part 03 | Ansible and Docker&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground03-ansible-docker/&#34;&gt;Sysadmin Playground Part 03 | Ansible and Docker 📦&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground04-openldap/&#34;&gt;Sysadmin Playground Part 04 | OpenLDAP&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground04-openldap/&#34;&gt;Sysadmin Playground Part 04 | OpenLDAP 👥&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground05-passwords-ansible-vault/&#34;&gt;Sysadmin Playground Part 05 | Passwords and Ansible Vault&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground05-passwords-ansible-vault/&#34;&gt;Sysadmin Playground Part 05 | Passwords and Ansible Vault 🔒&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground06-centralized-logs/&#34;&gt;Sysadmin Playground Part 06 | Centralized Logs&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground06-centralized-logs/&#34;&gt;Sysadmin Playground Part 06 | Centralized Logs 📄&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground07-email/&#34;&gt;Sysadmin Playground Part 07 | E-mail&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground07-email/&#34;&gt;Sysadmin Playground Part 07 | E-mail ✉️&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground08-nfs/&#34;&gt;Sysadmin Playground Part 08 | NFS&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground08-nfs/&#34;&gt;Sysadmin Playground Part 08 | NFS 💽&lt;/a&gt;&lt;br&gt;
 
 
 &lt;hr&gt;
@@ -1310,17 +1480,16 @@ olcRootPW: {SSHA}BLjBfAC4CLugKZ/eUj8HIvhUwEEJqTI2
 &lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&#34;cloud-init-root-password&#34;&gt;Cloud init root password&lt;/h2&gt;
 &lt;p&gt;Lastly we will change the root password of the boxes by modifying its definition in the &lt;strong&gt;cloud-init&lt;/strong&gt; files within the &lt;strong&gt;Terraform&lt;/strong&gt; directory. Change to that directory (I called mine &lt;strong&gt;cloud_inits&lt;/strong&gt;) and issue this command:&lt;/p&gt;
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;$ sed -i &amp;#39;s/nyaa/2hJmj7TFrz/g&amp;#39; *
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Next time the boxes are rebooted the root user will have the same password as our &lt;strong&gt;LDAP&lt;/strong&gt; &lt;strong&gt;cn=admin&lt;/strong&gt;.&lt;/p&gt;
-</description>
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Next time the boxes are rebooted the root user will have the same password as our &lt;strong&gt;LDAP&lt;/strong&gt; &lt;strong&gt;cn=admin&lt;/strong&gt;.&lt;/p&gt;</description>
 	</item>
 	
 	<item>
-		<title>Sysadmin Playground Part 04 | OpenLDAP</title>
+		<title>Sysadmin Playground Part 04 | OpenLDAP 👥</title>
 		<link>http://efym.net/blog/sysadmin-playground04-openldap/</link>
 		<pubDate>Mon, 16 Aug 2021 02:33:51 +0100</pubDate>
 		
 		<guid>http://efym.net/blog/sysadmin-playground04-openldap/</guid>
-		<description>&lt;p&gt;Recreation of a lab environment with Terraform and Ansible.&lt;/p&gt;
+		<description>&lt;p&gt;Manage global and centralized user accounts for multiple machines and services.&lt;/p&gt;
 &lt;hr&gt;
 &lt;strong&gt;This post is part of a series, follow the links to the other parts:&lt;/strong&gt;
 &lt;br&gt;
@@ -1328,19 +1497,19 @@ olcRootPW: {SSHA}BLjBfAC4CLugKZ/eUj8HIvhUwEEJqTI2
 
 &lt;a href=&#34;http://efym.net/blog/sysadmin-playground01-intro/&#34;&gt;Sysadmin Playground Part 01 | Intro&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground02-terraform-kvm/&#34;&gt;Sysadmin Playground Part 02 | Terraform and KVM&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground02-terraform-kvm/&#34;&gt;Sysadmin Playground Part 02 | Terraform and KVM 🖥&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground03-ansible-docker/&#34;&gt;Sysadmin Playground Part 03 | Ansible and Docker&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground03-ansible-docker/&#34;&gt;Sysadmin Playground Part 03 | Ansible and Docker 📦&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground04-openldap/&#34;&gt;Sysadmin Playground Part 04 | OpenLDAP&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground04-openldap/&#34;&gt;Sysadmin Playground Part 04 | OpenLDAP 👥&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground05-passwords-ansible-vault/&#34;&gt;Sysadmin Playground Part 05 | Passwords and Ansible Vault&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground05-passwords-ansible-vault/&#34;&gt;Sysadmin Playground Part 05 | Passwords and Ansible Vault 🔒&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground06-centralized-logs/&#34;&gt;Sysadmin Playground Part 06 | Centralized Logs&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground06-centralized-logs/&#34;&gt;Sysadmin Playground Part 06 | Centralized Logs 📄&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground07-email/&#34;&gt;Sysadmin Playground Part 07 | E-mail&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground07-email/&#34;&gt;Sysadmin Playground Part 07 | E-mail ✉️&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground08-nfs/&#34;&gt;Sysadmin Playground Part 08 | NFS&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground08-nfs/&#34;&gt;Sysadmin Playground Part 08 | NFS 💽&lt;/a&gt;&lt;br&gt;
 
 
 &lt;hr&gt;
@@ -1788,17 +1957,16 @@ guest2:yigo&lt;/p&gt;
 &lt;p&gt;Authenticating as &lt;strong&gt;guest2&lt;/strong&gt;: &lt;img src=&#34;http://efym.net/blog/sysadmin-playground/7.2.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
 &lt;p&gt;None of these accounts were created on the &lt;strong&gt;Linux&lt;/strong&gt; machines, &lt;strong&gt;Linux&lt;/strong&gt; is just querying the &lt;strong&gt;LDAP&lt;/strong&gt; server and allowing the posix accounts there to access the machine as if they were local, this is what our configuration files are accomplishing.&lt;br&gt;
 I also ran &lt;code&gt;sudo -l&lt;/code&gt; as &lt;strong&gt;tw1zr&lt;/strong&gt; to make sure our &lt;strong&gt;sudo&lt;/strong&gt; privileges were working properly; we defined all the users in the wheel group to be able to run &lt;strong&gt;sudo&lt;/strong&gt; commands without a password.&lt;/p&gt;
-&lt;p&gt;Many services out there are designed to be compatible with &lt;strong&gt;LDAP&lt;/strong&gt; authentication. We will likely use it again when we deploy further services.&lt;/p&gt;
-</description>
+&lt;p&gt;Many services out there are designed to be compatible with &lt;strong&gt;LDAP&lt;/strong&gt; authentication. We will likely use it again when we deploy further services.&lt;/p&gt;</description>
 	</item>
 	
 	<item>
-		<title>Sysadmin Playground Part 03 | Ansible and Docker</title>
+		<title>Sysadmin Playground Part 03 | Ansible and Docker 📦</title>
 		<link>http://efym.net/blog/sysadmin-playground03-ansible-docker/</link>
 		<pubDate>Fri, 13 Aug 2021 04:44:02 +0100</pubDate>
 		
 		<guid>http://efym.net/blog/sysadmin-playground03-ansible-docker/</guid>
-		<description>&lt;p&gt;Recreation of a lab environment with Terraform and Ansible&lt;/p&gt;
+		<description>&lt;p&gt;Initialize and understand your Ansible environment to configure the virtual machines and deploy docker containers.&lt;/p&gt;
 &lt;hr&gt;
 &lt;strong&gt;This post is part of a series, follow the links to the other parts:&lt;/strong&gt;
 &lt;br&gt;
@@ -1806,19 +1974,19 @@ I also ran &lt;code&gt;sudo -l&lt;/code&gt; as &lt;strong&gt;tw1zr&lt;/strong&gt
 
 &lt;a href=&#34;http://efym.net/blog/sysadmin-playground01-intro/&#34;&gt;Sysadmin Playground Part 01 | Intro&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground02-terraform-kvm/&#34;&gt;Sysadmin Playground Part 02 | Terraform and KVM&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground02-terraform-kvm/&#34;&gt;Sysadmin Playground Part 02 | Terraform and KVM 🖥&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground03-ansible-docker/&#34;&gt;Sysadmin Playground Part 03 | Ansible and Docker&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground03-ansible-docker/&#34;&gt;Sysadmin Playground Part 03 | Ansible and Docker 📦&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground04-openldap/&#34;&gt;Sysadmin Playground Part 04 | OpenLDAP&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground04-openldap/&#34;&gt;Sysadmin Playground Part 04 | OpenLDAP 👥&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground05-passwords-ansible-vault/&#34;&gt;Sysadmin Playground Part 05 | Passwords and Ansible Vault&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground05-passwords-ansible-vault/&#34;&gt;Sysadmin Playground Part 05 | Passwords and Ansible Vault 🔒&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground06-centralized-logs/&#34;&gt;Sysadmin Playground Part 06 | Centralized Logs&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground06-centralized-logs/&#34;&gt;Sysadmin Playground Part 06 | Centralized Logs 📄&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground07-email/&#34;&gt;Sysadmin Playground Part 07 | E-mail&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground07-email/&#34;&gt;Sysadmin Playground Part 07 | E-mail ✉️&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground08-nfs/&#34;&gt;Sysadmin Playground Part 08 | NFS&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground08-nfs/&#34;&gt;Sysadmin Playground Part 08 | NFS 💽&lt;/a&gt;&lt;br&gt;
 
 
 &lt;hr&gt;
@@ -2179,17 +2347,16 @@ cutxo   ansible_host=192.168.122.4   ansible_ssh_user=root   ansible_ssh_private
 &lt;p&gt;&lt;code&gt;$ ssh -L 6080:192.168.122.2:6080 root@[IP of hypervisor] -N&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;Now we open a browser on our desktop, go to &lt;strong&gt;localhost:6080&lt;/strong&gt; and we should see something like this:&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;http://efym.net/blog/sysadmin-playground/3.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Looking good so far. Right now we won&amp;rsquo;t be able to log into the &lt;strong&gt;LDAP&lt;/strong&gt; server because we haven&amp;rsquo;t configured it yet. In the next post we will setup the master/master replication pair we spoke of before.&lt;/p&gt;
-</description>
+&lt;p&gt;Looking good so far. Right now we won&amp;rsquo;t be able to log into the &lt;strong&gt;LDAP&lt;/strong&gt; server because we haven&amp;rsquo;t configured it yet. In the next post we will setup the master/master replication pair we spoke of before.&lt;/p&gt;</description>
 	</item>
 	
 	<item>
-		<title>Sysadmin Playground Part 02 | Terraform and KVM</title>
+		<title>Sysadmin Playground Part 02 | Terraform and KVM 🖥</title>
 		<link>http://efym.net/blog/sysadmin-playground02-terraform-kvm/</link>
 		<pubDate>Tue, 13 Jul 2021 01:02:51 +0100</pubDate>
 		
 		<guid>http://efym.net/blog/sysadmin-playground02-terraform-kvm/</guid>
-		<description>&lt;p&gt;Recreation of a lab environment with Terraform and Ansible.&lt;/p&gt;
+		<description>&lt;p&gt;Using Terraform with the KVM provider and cloud-init to spin up virtual machines while keeping the infrastructure&amp;rsquo;s configuration as code.&lt;/p&gt;
 &lt;hr&gt;
 &lt;strong&gt;This post is part of a series, follow the links to the other parts:&lt;/strong&gt;
 &lt;br&gt;
@@ -2197,19 +2364,19 @@ cutxo   ansible_host=192.168.122.4   ansible_ssh_user=root   ansible_ssh_private
 
 &lt;a href=&#34;http://efym.net/blog/sysadmin-playground01-intro/&#34;&gt;Sysadmin Playground Part 01 | Intro&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground02-terraform-kvm/&#34;&gt;Sysadmin Playground Part 02 | Terraform and KVM&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground02-terraform-kvm/&#34;&gt;Sysadmin Playground Part 02 | Terraform and KVM 🖥&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground03-ansible-docker/&#34;&gt;Sysadmin Playground Part 03 | Ansible and Docker&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground03-ansible-docker/&#34;&gt;Sysadmin Playground Part 03 | Ansible and Docker 📦&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground04-openldap/&#34;&gt;Sysadmin Playground Part 04 | OpenLDAP&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground04-openldap/&#34;&gt;Sysadmin Playground Part 04 | OpenLDAP 👥&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground05-passwords-ansible-vault/&#34;&gt;Sysadmin Playground Part 05 | Passwords and Ansible Vault&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground05-passwords-ansible-vault/&#34;&gt;Sysadmin Playground Part 05 | Passwords and Ansible Vault 🔒&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground06-centralized-logs/&#34;&gt;Sysadmin Playground Part 06 | Centralized Logs&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground06-centralized-logs/&#34;&gt;Sysadmin Playground Part 06 | Centralized Logs 📄&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground07-email/&#34;&gt;Sysadmin Playground Part 07 | E-mail&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground07-email/&#34;&gt;Sysadmin Playground Part 07 | E-mail ✉️&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground08-nfs/&#34;&gt;Sysadmin Playground Part 08 | NFS&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground08-nfs/&#34;&gt;Sysadmin Playground Part 08 | NFS 💽&lt;/a&gt;&lt;br&gt;
 
 
 &lt;hr&gt;
@@ -2390,8 +2557,7 @@ runcmd:
 &lt;p&gt;The &lt;code&gt;[path/to/ssh/key]&lt;/code&gt; after the &lt;strong&gt;-i&lt;/strong&gt; switch refers to the path in the computer serving as the hypervisor where the private key which corresponds to the public key we set up in the &lt;strong&gt;cloud_inits&lt;/strong&gt; is stored. You should now have a bash prompt in the machine called &lt;strong&gt;doris&lt;/strong&gt;.&lt;br&gt;
 From here we can check our &lt;strong&gt;DNS&lt;/strong&gt; settings as well if we wanted to; I&amp;rsquo;ll drop a screengrab with a couple commands I ran to do it.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;http://efym.net/blog/img/sysadmin-playground2.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-&lt;p&gt;In the next chapter we&amp;rsquo;ll do further configuration using &lt;strong&gt;Ansible&lt;/strong&gt; and set up our first service with &lt;strong&gt;Docker&lt;/strong&gt;.&lt;/p&gt;
-</description>
+&lt;p&gt;In the next chapter we&amp;rsquo;ll do further configuration using &lt;strong&gt;Ansible&lt;/strong&gt; and set up our first service with &lt;strong&gt;Docker&lt;/strong&gt;.&lt;/p&gt;</description>
 	</item>
 	
 	<item>
@@ -2408,19 +2574,19 @@ From here we can check our &lt;strong&gt;DNS&lt;/strong&gt; settings as well if 
 
 &lt;a href=&#34;http://efym.net/blog/sysadmin-playground01-intro/&#34;&gt;Sysadmin Playground Part 01 | Intro&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground02-terraform-kvm/&#34;&gt;Sysadmin Playground Part 02 | Terraform and KVM&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground02-terraform-kvm/&#34;&gt;Sysadmin Playground Part 02 | Terraform and KVM 🖥&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground03-ansible-docker/&#34;&gt;Sysadmin Playground Part 03 | Ansible and Docker&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground03-ansible-docker/&#34;&gt;Sysadmin Playground Part 03 | Ansible and Docker 📦&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground04-openldap/&#34;&gt;Sysadmin Playground Part 04 | OpenLDAP&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground04-openldap/&#34;&gt;Sysadmin Playground Part 04 | OpenLDAP 👥&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground05-passwords-ansible-vault/&#34;&gt;Sysadmin Playground Part 05 | Passwords and Ansible Vault&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground05-passwords-ansible-vault/&#34;&gt;Sysadmin Playground Part 05 | Passwords and Ansible Vault 🔒&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground06-centralized-logs/&#34;&gt;Sysadmin Playground Part 06 | Centralized Logs&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground06-centralized-logs/&#34;&gt;Sysadmin Playground Part 06 | Centralized Logs 📄&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground07-email/&#34;&gt;Sysadmin Playground Part 07 | E-mail&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground07-email/&#34;&gt;Sysadmin Playground Part 07 | E-mail ✉️&lt;/a&gt;&lt;br&gt;
 
-&lt;a href=&#34;http://efym.net/blog/sysadmin-playground08-nfs/&#34;&gt;Sysadmin Playground Part 08 | NFS&lt;/a&gt;&lt;br&gt;
+&lt;a href=&#34;http://efym.net/blog/sysadmin-playground08-nfs/&#34;&gt;Sysadmin Playground Part 08 | NFS 💽&lt;/a&gt;&lt;br&gt;
 
 
 &lt;hr&gt;
@@ -2472,8 +2638,7 @@ I&amp;rsquo;m very familiar with &lt;strong&gt;Ansible&lt;/strong&gt;, I&amp;rsq
 &lt;p&gt;&lt;strong&gt;nginx&lt;/strong&gt; instead of &lt;strong&gt;Apache2&lt;/strong&gt;.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;And there will possibly be other changes which I&amp;rsquo;ll try to document as I go (this post probably will also be updated periodically).&lt;/p&gt;
-</description>
+&lt;p&gt;And there will possibly be other changes which I&amp;rsquo;ll try to document as I go (this post probably will also be updated periodically).&lt;/p&gt;</description>
 	</item>
 	
 	<item>
@@ -2583,12 +2748,11 @@ UUID=[UUIDOFsda1]           /boot    vfat      defaults         0       0
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;chroot # exit
 &lt;/code&gt;&lt;/pre&gt;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;root@void-live:~ # umount -R /mn
 &lt;/code&gt;&lt;/pre&gt;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;root@void-live:~ # reboot
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Right now you should have a fully functioning Void install, I use an Ansible playbook which sets up my entire graphical environment, dotfiles and other things; maybe I&amp;rsquo;ll publish that soon.&lt;/p&gt;
-</description>
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Right now you should have a fully functioning Void install, I use an Ansible playbook which sets up my entire graphical environment, dotfiles and other things; maybe I&amp;rsquo;ll publish that soon.&lt;/p&gt;</description>
 	</item>
 	
 	<item>
-		<title>About Moderation</title>
+		<title>About Moderation 🔧</title>
 		<link>http://efym.net/blog/about-moderation/</link>
 		<pubDate>Fri, 14 May 2021 17:03:06 +0100</pubDate>
 		
@@ -2601,12 +2765,11 @@ I do not want to participate in the many discussions taking place around the tec
 &lt;ul&gt;
 &lt;li&gt;Absolutely &lt;strong&gt;zero&lt;/strong&gt; child pornography of any kind.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;That&amp;rsquo;s it. Everything else is okay.&lt;/p&gt;
-</description>
+&lt;p&gt;That&amp;rsquo;s it. Everything else is okay.&lt;/p&gt;</description>
 	</item>
 	
 	<item>
-		<title>Digital Diseases</title>
+		<title>Digital Diseases 🦠</title>
 		<link>http://efym.net/blog/digital-diseases/</link>
 		<pubDate>Tue, 04 May 2021 20:10:47 +0100</pubDate>
 		
@@ -2626,8 +2789,7 @@ I do not want to participate in the many discussions taking place around the tec
 &lt;li&gt;&lt;a href=&#34;https://knowledge.wharton.upenn.edu/article/fallout-cambridge-analytica/&#34;&gt;Cambridge Analytica scandal&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.simplypsychology.org/operant-conditioning.html&#34;&gt;Operant Conditioning (skinner box)&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.foxnews.com/tech/former-facebook-exec-wont-let-own-kids-use-social-media-says-its-destroying-how-society-works&#34;&gt;Facebook exec won&amp;rsquo;t allow his kids on Facebook&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
+&lt;/ul&gt;</description>
 	</item>
 	
 	<item>
@@ -2656,12 +2818,11 @@ I do not want to participate in the many discussions taking place around the tec
 &lt;li&gt;&lt;a href=&#34;https://www.gnu.org/philosophy/free-sw.html&#34;&gt;https://www.gnu.org/philosophy/free-sw.html&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.gnu.org/proprietary/&#34;&gt;https://www.gnu.org/proprietary/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.gnu.org/philosophy/free-software-even-more-important.en.html&#34;&gt;https://www.gnu.org/philosophy/free-software-even-more-important.en.html&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
+&lt;/ul&gt;</description>
 	</item>
 	
 	<item>
-		<title>Nighttime Backups</title>
+		<title>Nighttime Backups 💾</title>
 		<link>http://efym.net/blog/nighttime-backups/</link>
 		<pubDate>Mon, 24 Aug 2020 14:10:20 +0100</pubDate>
 		
@@ -2775,8 +2936,7 @@ export RCLONE_CONFIG_PASS=$(cat /etc/borg_keys/rclone)
 
 rclone -v sync /mnt/drives/oasis/backups backblaze:tw1zr-backups
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Here I added a couple killswitches at the beginning to make sure borg and rclone don&amp;rsquo;t run at the same time, also to prevent 2 instances of the same script interfering with eachother.&lt;/p&gt;
-&lt;p&gt;As you may have realised these scripts require for you to define the boxes which will be backed up and also the way I wrote them assumes these boxes are configured in the ssh config file and set up with public key authentication. It is also assumed that the borg repositories are already in place and rclone has been configured with an encrypted config file, which in my case also resides at &lt;code&gt;/etc/borg_keys&lt;/code&gt;&lt;/p&gt;
-</description>
+&lt;p&gt;As you may have realised these scripts require for you to define the boxes which will be backed up and also the way I wrote them assumes these boxes are configured in the ssh config file and set up with public key authentication. It is also assumed that the borg repositories are already in place and rclone has been configured with an encrypted config file, which in my case also resides at &lt;code&gt;/etc/borg_keys&lt;/code&gt;&lt;/p&gt;</description>
 	</item>
 	
 	<item>
@@ -2817,8 +2977,7 @@ All three would straight up ask for full name, phone number, full address and ev
 &lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://1984hosting.com&#34;&gt;1984hosting&lt;/a&gt;&lt;/strong&gt; requires zero personally identifiable information in order to sign up, phone number is optional and only in case you need tech support, which we don&amp;rsquo;t; is privately owned and the owner is actively involved in free speech rights campaigns. The country in which its datacenters reside is Iceland: arguably the best jurisdiction on the planet regarding privacy and free speech laws. Okay, this is epic.&lt;br&gt;
 Even the price is excellent, comparable with bigger and much better funded solutions. Bitcoin is also accepted as a form of payment, Monero would be perfect but I can settle for using &lt;a href=&#34;https://xmr.to&#34;&gt;xmr.to&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;http://efym.net/hosting-infrastructure/1.png&#34; alt=&#34;&#34;&gt; picture from their website&lt;/p&gt;
-&lt;p&gt;As it stands today most everything I host for myself (not work related) is still in &lt;a href=&#34;https://sporestack.com&#34;&gt;Sporestack&lt;/a&gt; but over the next couple weeks I&amp;rsquo;ll be migrating everything over to &lt;a href=&#34;https://1984hosting.com&#34;&gt;1984hosting&lt;/a&gt; and will update this post with results.&lt;/p&gt;
-</description>
+&lt;p&gt;As it stands today most everything I host for myself (not work related) is still in &lt;a href=&#34;https://sporestack.com&#34;&gt;Sporestack&lt;/a&gt; but over the next couple weeks I&amp;rsquo;ll be migrating everything over to &lt;a href=&#34;https://1984hosting.com&#34;&gt;1984hosting&lt;/a&gt; and will update this post with results.&lt;/p&gt;</description>
 	</item>
 	
 	</channel>
