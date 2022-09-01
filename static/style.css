@@ -129,6 +129,20 @@ h3 {
     font-size: 1.5em;
 }
 
+h3.error-top {
+    font-size: 13em;
+	text-align: center;
+	margin: auto;
+	text-shadow: 4px 4px 4px #000;
+}
+
+h3.error-bot {
+    font-size: 1.8em;
+	text-align: center;
+	margin: 1em;
+	text-shadow: 2px 2px 2px #000;
+}
+
 h4 {
     font-size: 0.9em;
     font-weight: bold;
@@ -236,7 +250,7 @@ nav > div > ul > li > a {
 }
 
 nav > div.nav-right > ul > li > a {
-    padding: 0.5em 0.5em;
+    padding: 0.5em 0.9em;
 }
 
 nav > div > ul > li > a:hover {
