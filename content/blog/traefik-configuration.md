@@ -1,5 +1,5 @@
 ---
-title: "🚦 Traefik Configuration and easy routing"
+title: "🚦 Traefik configuration and easy routing"
 date: 2022-08-20T11:11:59+01:00
 tags: [ 'linux', 'routing' ]
 ---

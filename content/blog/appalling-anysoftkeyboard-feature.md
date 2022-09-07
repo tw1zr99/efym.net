@@ -1,5 +1,5 @@
 ---
-title: "Appalling Anysoftkeyboard ⌨️ Feature"
+title: 'Appalling Anysoftkeyboard ⌨️ "Feature"'
 date: 2021-10-13T12:54:02+01:00
 tags: [ 'mobile', 'android', 'propaganda' ]
 ---
