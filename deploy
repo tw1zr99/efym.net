@@ -1,5 +1,0 @@
-#!/bin/bash
-
-[[ -f ./deploy ]] || exit 1
-
-hugo && rsync -avz --delete public/ root@vera:/srv/efym_net/efym_net-data/
