@@ -15,9 +15,9 @@ I _exclusively_ use **GNU/Linux** on every single device. My desktop and laptop 
 
 I'm also a massive **vim** user (well, actually **neovim**, but it's pretty much the same thing). This means I tailor 99% of my interactions with my computers to follow **vim**-like keybinds as well as using the command-line for the better part of my activities.
 
-[dwm](https://gitea.efym.net/tw1zr/dwm) is my window manager, with [dwmblocks](https://gitea.efym.net/dwmblocks) as the statusbar
-[dmenu](https://gitea.efym.net/tw1zr/dmenu) is my application launcher
-[st](https://gitea.efym.net/tw1zr/st) is my terminal emulator
+[dwm](https://git.efym.net/tw1zr/dwm) is my window manager, with [dwmblocks](https://git.efym.net/dwmblocks) as the statusbar
+[dmenu](https://git.efym.net/tw1zr/dmenu) is my application launcher
+[st](https://git.efym.net/tw1zr/st) is my terminal emulator
 [neovim](https://github.com/neovim/neovim) is my text editor
 [ranger](https://github.com/ranger/ranger) is my file manager
 [neomutt](https://github.com/neomutt/neomutt) is my e-mail client
@@ -59,7 +59,7 @@ I have for years been hosting every single service I use which is possible to ru
 * **E-mail** server based on [Postfix](http://www.postfix.org) and [Dovecot](https://dovecot.org) with or without web fron-ends like [Roundcube](https://roundcube.net)
 * Media server with [Jellyfin](https://jellyfin.org)
 * [Monero (XMR)](https://getmonero.org) node accessible through **Tor** and my **WireGuard** network
-* **Git** server with plain **CGI** ([cgit](https://git.zx2c4.com/cgit)) or more complex with [Gitea](https://gitea.io)/[Gogs](https://gogs.io)
+* **Git** server with plain **CGI** ([cgit](https://git.zx2c4.com/cgit)) or more complex with [Gitea](https://gitea.io)/[Forgejo](https://forgejo.org)
 * **XMPP** chat server using [Prosody](https://prosody.im)
 * **Matrix** chat server using [Synapse](https://github.com/matrix-org/synapse), [Dendrite](https://github.com/matrix-org/dendrite) and [Conduit](https://gitlab.com/famedly/conduit) with [Element](https://element.io) as a web front-end
 * File servers with web-based front-ends like [Nextcloud](https://nextcloud.com) and [Seafile](https://seafile.com)

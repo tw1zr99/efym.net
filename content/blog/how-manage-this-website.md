@@ -21,8 +21,8 @@ All that being said, it would be a major pain in the ass and totally unnecesary 
 
 It supports **markdown** to **html** conversion too, so if one was inclined to write the pages in markdown one could do that. All you need to do to run it is make a couple of directories, one with source files and one which acts as the destination one, this last directory's content is ready to be put in your web server.
 
-There are detailed instructions on **ssg**'s website, which you can visit at:  
-[https://www.romanzolotarev.com/ssg.html](https://www.romanzolotarev.com/ssg.html)  
+There are detailed instructions on **ssg**'s website, which you can visit at:
+[https://www.romanzolotarev.com/ssg.html](https://www.romanzolotarev.com/ssg.html)
 But as an example this is what I would run to generate the website files for the first time or after modifying something:
 
 ```
@@ -109,9 +109,9 @@ esac
 
 The script has comments at the beginning of each section, so it should be fairly easy to identify exactly how I accomplish the tasks mentioned before (provided the reader is familiar with **bash**).
 
-Another thing I wanted to have automatically generated based on the current available posts is an **RSS** feed. I personally use **RSS** all the time to keep up with various news, videos, etc. I think **RSS** is very understimated nowadays but since I use it I wanted my site to prioritize it. So the **deploy-site** wrapper script also generates an **RSS** feed and adds links to it at the top of the **blogindex.html** page and in the "Recent articles" section in the **index.html** page.  
+Another thing I wanted to have automatically generated based on the current available posts is an **RSS** feed. I personally use **RSS** all the time to keep up with various news, videos, etc. I think **RSS** is very understimated nowadays but since I use it I wanted my site to prioritize it. So the **deploy-site** wrapper script also generates an **RSS** feed and adds links to it at the top of the **blogindex.html** page and in the "Recent articles" section in the **index.html** page.
 The **RSS** feed links point here: [https://efym.net/feed](/feed) and can be accessed with any available client.
 
 After all those things are done, the script rebuilds the site files using **ssg** then prompts me whether I'd like to **rsync** the `dst` directory straight to the server hosting the website on the Internet, usually I'll run the script many times before I actually upload the work I've done.
 
-I also keep all of these files in a **git** repository on my **Gitea** instance: [gitea.efym.net/efym.net-ssg](https://gitea.efym.net/tw1zr/efym.net-ssg) feel free to browse, everything is Free Software under the **GPLv3** license.
+I also keep all of these files in a **git** repository on my **Forgejo** instance: [git.efym.net/efym.net](https://git.efym.net/tw1zr/efym.net-ssg) feel free to browse, everything is Free Software under the **GPLv3** license.
