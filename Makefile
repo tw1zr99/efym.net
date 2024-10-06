@@ -2,7 +2,7 @@
 
 build:
 	hugo
-	docker build -t git.efym.net/tw1zr/efym.net:latest -f docker/Dockerfile .
+	docker build -t codeberg.org/tw1zr/efym.net:latest -f docker/Dockerfile .
 
 upload: build
-	docker push git.efym.net/tw1zr/efym.net:latest
+	docker push codeberg.org/tw1zr/efym.net:latest
