@@ -7,7 +7,7 @@ I'm **tw1zr**, a **GNU/Linux** sysadmin and free software advocate. Also a maste
 
 My real name is George and I currently work as a DevOps Engineer for a software company in Brighton, UK.
 
-I'll put together a list of specific technical proficiencies somewhere on this page eventually, for now suffice to say that I do Linux stuff from the scary black boxes a.k.a terminal emulators.
+I do Linux stuff from the scary black boxes a.k.a terminal emulators.
 
 ## Software and workflow
 
@@ -15,17 +15,26 @@ I _exclusively_ use **GNU/Linux** on every single device. My desktop and laptop 
 
 I'm also a massive **vim** user (well, actually **neovim**, but it's pretty much the same thing). This means I tailor 99% of my interactions with my computers to follow **vim**-like keybinds as well as using the command-line for the better part of my activities.
 
-[dwm](https://git.efym.net/tw1zr/dwm) is my window manager, with [dwmblocks](https://git.efym.net/dwmblocks) as the statusbar
-[dmenu](https://git.efym.net/tw1zr/dmenu) is my application launcher
-[st](https://git.efym.net/tw1zr/st) is my terminal emulator
+[awesomeWM](https://github.com/awesomeWM/awesome) is my window manager
+
+[rofi](https://github.com/davatorium/rofi) is my application launcher
+
+[alacritty](https://github.com/alacritty/alacritty) is my terminal emulator
+
 [neovim](https://github.com/neovim/neovim) is my text editor
-[ranger](https://github.com/ranger/ranger) is my file manager
-[neomutt](https://github.com/neomutt/neomutt) is my e-mail client
+
+[yazi](https://github.com/sxyazi/yazi) is my file manager
+
 [mpd](https://github.com/MusicPlayerDaemon/MPD)+[ncmpcpp](https://github.com/ncmpcpp/ncmpcpp) are what I use to play my music
+
 [mpv](https://github.com/mpv-player/mpv) is my video player
+
 [nsxiv](https://codeberg.org/nsxiv/nsxiv) is my image viewer
+
 [password-store](https://git.zx2c4.com/password-store) is my password manager
+
 [qutebrowser](https://github.com/qutebrowser/qutebrowser) is my main web browser
+
 [librewolf](https://librewolf-community.gitlab.io) is my secondary web browser
 
 These are the main programs I use on my desktop/laptop, but they're far from the only ones, of course.
@@ -45,6 +54,7 @@ Check out my [Sysadmin Playground](/blog/sysadmin-playground01-intro) series for
 * Linux, Linux, Linux. I breathe **GNU/Linux** every day of my life. I'm extremely familiar with its inner workings.
 * Infrastructure deployment with [Terraform](https://www.terraform.io)
 * Configuration management and orchestration with [Ansible](https://ansible.com)
+* Almost all of AWS (clustering, buckets, RDS, role-based permissions with IAM; think of it and I've used it)
 * Web hosting with [nginx](https://www.nginx.com) and [apache](https://apache.org)
 * Static site generation with [Hugo](https://gohugo.io)
 * Proxying services with [Traefik](https://traefik.io)
@@ -52,6 +62,12 @@ Check out my [Sysadmin Playground](/blog/sysadmin-playground01-intro) series for
 * Infrastructure monitoring with [Nagios](https://nagios.com) and [Checkmk](https://checkmk.com)
 * Metrics monitoring with [Prometheus](https://prometheus.io) and [Grafana](https://grafana.com)
 * Scripting and automation with bash
+
+I'm more network and infrastructure minded, but I can program in a couple of languages:
+* bash (big fan)
+* PHP
+* Python
+* Golang
 
 I have for years been hosting every single service I use which is possible to run on my own infrastructure. (I have a blog post explaining most of my reasoning here: [Why I self-host everything I can](/blog/why-i-self-host)). These services include, but are not limited to:
 

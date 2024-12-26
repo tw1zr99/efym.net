@@ -1,0 +1,18 @@
+version: '3'
+
+vars:
+  image: codeberg.org/tw1zr/efym.net:latest
+
+tasks:
+  build:
+    desc: "Build the website and Docker image"
+    cmds:
+      - hugo
+      - docker build -t {{.image}} -f docker/Dockerfile .
+
+  upload:
+    desc: "Upload the Docker image to the repository"
+    deps:
+      - build
+    cmds:
+      - docker push {{.image}}
