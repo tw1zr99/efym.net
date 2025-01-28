@@ -1,12 +1,12 @@
 ---
 title: "Sysadmin Playground Part 03 | Ansible and Docker 📦"
 date: 2021-08-13T04:44:02+01:00
-tags: [ 'sysadmin', 'linux' ]
+tags: ['sysadmin', 'linux']
 series: ['Sysadmin Playground']
 series_order: 3
 ---
-
-> Initialize and understand your Ansible environment to configure the virtual machines and deploy docker containers.
+#### Initialize and understand your Ansible environment to configure the virtual machines and deploy docker containers.
+* * *
 
 ## Configuring Ansible
 

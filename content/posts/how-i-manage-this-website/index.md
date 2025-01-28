@@ -1,21 +1,20 @@
 ---
 title: "How I manage this website 🌐"
 date: 2021-10-29T11:16:10+01:00
-tags: [ 'html', 'bash' ]
+tags: ['html', 'bash']
 ---
-Run-down of the process and tools I use to keep efym.net running.
-
-<!--more-->
-
+#### Run-down of the process and tools I use to keep efym.net running.
 * * *
 
-* * *
+{{< alert icon="fire" cardColor="#e63946" iconColor="#1d3557" textColor="#f1faee" >}}
+**Update:** This post is no longer how I manage this website, I have moved on to using Hugo with the Blowfish theme.
+{{< /alert >}}
 
 ## Static site generation
 
 Back when I was around 10 years old one of my older cousins showed me how to make very simple web pages by writing the **html** tags directly into a file with notepad. Now many years later I still write my own **html** code instead of using frameworks, all I need is **vim** to make a website; granted it wouldn't be anywhere near as fancy of something produced with **Wordpress** or **Joomla** but to me that's a plus. I despise how bloated the modern web is which is why my website is kept intentionally simple.
 
-All that being said, it would be a major pain in the ass and totally unnecesary to write every single web page from scratch by hand, so when I first created **efym.net** I looked around to make a choice about which static site generator I was going to use. Very much to my surprise I found **ssg**, a very simple script written in **bash** which does something very close to what I wanted: it takes a header and a footer file and wraps every other file in the designated directory with them. There are a couple other things it does but none of them really concern me. No bloat, no JavaScript, no themes, etc.
+All that being said, it would be a major pain in the ass and totally unnecessary to write every single web page from scratch by hand, so when I first created **efym.net** I looked around to make a choice about which static site generator I was going to use. Very much to my surprise I found **ssg**, a very simple script written in **bash** which does something very close to what I wanted: it takes a header and a footer file and wraps every other file in the designated directory with them. There are a couple other things it does but none of them really concern me. No bloat, no JavaScript, no themes, etc.
 
 It supports **markdown** to **html** conversion too, so if one was inclined to write the pages in markdown one could do that. All you need to do to run it is make a couple of directories, one with source files and one which acts as the destination one, this last directory's content is ready to be put in your web server.
 
@@ -37,7 +36,7 @@ Then just open any web browser and point the url to **localhost:8080**.
 
 ## Deployment script
 
-As good as **ssg** is as a static site generator, it's still missing some very specific things, I wanted a "Recent articles" section at the bottom of the **index.html** page which automatically selected the most recent 2-3 blog posts I'd written and displayed links to them. I also wanted the **blogindex.html** page to be generated with entries linking to every blog post inside the **blog** directory. So in order to not have to add and change these entries manually everytime I write a new blog post, I wrote a wrapper script to take care of it, here is what it looks like:
+As good as **ssg** is as a static site generator, it's still missing some very specific things, I wanted a "Recent articles" section at the bottom of the **index.html** page which automatically selected the most recent 2-3 blog posts I'd written and displayed links to them. I also wanted the **blogindex.html** page to be generated with entries linking to every blog post inside the **blog** directory. So in order to not have to add and change these entries manually every time I write a new blog post, I wrote a wrapper script to take care of it, here is what it looks like:
 
 **`$ cat deploy-site`**
 ```
@@ -107,7 +106,7 @@ esac
 
 The script has comments at the beginning of each section, so it should be fairly easy to identify exactly how I accomplish the tasks mentioned before (provided the reader is familiar with **bash**).
 
-Another thing I wanted to have automatically generated based on the current available posts is an **RSS** feed. I personally use **RSS** all the time to keep up with various news, videos, etc. I think **RSS** is very understimated nowadays but since I use it I wanted my site to prioritize it. So the **deploy-site** wrapper script also generates an **RSS** feed and adds links to it at the top of the **blogindex.html** page and in the "Recent articles" section in the **index.html** page.
+Another thing I wanted to have automatically generated based on the current available posts is an **RSS** feed. I personally use **RSS** all the time to keep up with various news, videos, etc. I think **RSS** is very underestimated nowadays but since I use it I wanted my site to prioritize it. So the **deploy-site** wrapper script also generates an **RSS** feed and adds links to it at the top of the **blogindex.html** page and in the "Recent articles" section in the **index.html** page.
 The **RSS** feed links point here: [https://efym.net/feed](/feed) and can be accessed with any available client.
 
 After all those things are done, the script rebuilds the site files using **ssg** then prompts me whether I'd like to **rsync** the `dst` directory straight to the server hosting the website on the Internet, usually I'll run the script many times before I actually upload the work I've done.

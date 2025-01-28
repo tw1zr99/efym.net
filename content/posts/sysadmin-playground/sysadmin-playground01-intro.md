@@ -1,13 +1,13 @@
 ---
 title: "Sysadmin Playground Part 01 | Intro"
 date: 2021-07-06T21:29:23+01:00
-tags: [ 'sysadmin', 'linux' ]
+tags: ['sysadmin', 'linux']
 series: ['Sysadmin Playground']
 series_order: 1
 ---
 Recently I came across a 6 years old post on Reddit wherein a person described what he thought were the most important areas of enterprise Linux systems administration, I decided to recreate it. Since I haven't worked much with enterprise software this will be both fun and challenging for me.
 
-**Link:** [How did you get your start](https://teddit.net/r/linuxadmin/comments/2s924h/how_did_you_get_your_start/cnnw1ma/)
+**Link:** [How did you get your start](https://www.reddit.com/r/linuxadmin/comments/2s924h/comment/cnnw1ma/)
 
 **These are the words from his post:**
 

@@ -1,19 +1,16 @@
 ---
 title: "🚦 Traefik configuration and easy routing"
 date: 2022-08-20T11:11:59+01:00
-tags: [ 'linux', 'routing' ]
+tags: ['linux', 'routing']
 ---
-My configuration for Traefik with wildcard TLS certificates.
-
-<!--more-->
-
+#### My configuration for Traefik with wildcard TLS certificates.
 * * *
 
 When you host several Internet-facing services it's of the utmost importance the encrypt the traffic with TLS. It's also very convient to have wildcard certificates and have subdomains redirect traffic to specific ports so that no more than 1 TLS certificate is needed. It's also true that subdomains look better aesthetically than a domain name with ports; exhibit A:
-* https://git.efym.net
-* https://efym.net:3000
+- https://git.efym.net
+- https://efym.net:3000
 
-Most people will agree that the first option is more pleasing to the eye, also easier to remember.  
+Most people will agree that the first option is more pleasing to the eye, also easier to remember.
 Not to mention that you won't have port shortages of any kind, which also makes running multiple instances of the same service at the same time a breeze. I do this a lot while performing tests.
 
 ## Domain registrar DNS
@@ -24,12 +21,12 @@ The first thing we need to do is point the registrar's DNS records for our domai
 
 ## Reverse proxy with Traefik
 
-We're going to use what's called a reverse proxy. There are a few options in this department, in the past I've used [nginx](https://nginx.com) and it works well; but my preferred one is [Traefik](https://traefik.io). I've been using it for around 2 years with no problems at all.  
+We're going to use what's called a reverse proxy. There are a few options in this department, in the past I've used [nginx](https://nginx.com) and it works well; but my preferred one is [Traefik](https://traefik.io). I've been using it for around 2 years with no problems at all.
 Its configuration isn't the easiest, but once it has been properly set up it is—in my opinion—the best reverse proxy when working with containers since it can dynamically route traffic to the correct endpoints by reading labels assigned to **Docker** containers on creation.
 
 We're going to deploy **Traefik** using **docker-compose**. I will assume the reader can install **docker-compose** by themselves.
 
-There are 2 ways to way to write down **Traefik** configuration, we can do it on with config files or by appending lines to the **command** directive in the **docker-compose** file. I personally use config files so that's what I'll show here.  
+There are 2 ways to way to write down **Traefik** configuration, we can do it on with config files or by appending lines to the **command** directive in the **docker-compose** file. I personally use config files so that's what I'll show here.
 
 There are also 2 types of configuration instructions: static and dynamic. The static configurations are the ones under the **command** directive or inside a file called `traefik.yml`. Dynamic configurations go under the containers' labels or in any other file besides `traefik.yml`.
 
@@ -105,8 +102,8 @@ This static configuration file defines:
 * Forced **http** to **https** redirection
 * Minimum TLS version accepted (here set to TLSv1.2)
 * Directory to watch for dynamic config files (set to `/etc/traefik`)
-* TLS certificate resolver  
-We're going to use [Let's Encrypt](https://letsencrypt.org) through a DNS challenge to obtain our wildcard certificate. It will be stored in ACME format in the `/ssl-certs/acme.json` file as defined.  
+* TLS certificate resolver
+We're going to use [Let's Encrypt](https://letsencrypt.org) through a DNS challenge to obtain our wildcard certificate. It will be stored in ACME format in the `/ssl-certs/acme.json` file as defined.
 Also note that I set the **provider** directive to **njalla**, that's because [Njalla](https://njal.la) is the domain registrar that I use. But this can be changed if you use another registrar. [Traefik has very good documentation on this](https://doc.traefik.io/traefik/https/acme/).
 
 The **Njalla** provider needs one environment variables to be able to complete the DNS challenge, we will store this variables in a file called `traefik-env` and later define it in our `docker-compose.yml` file.
@@ -201,7 +198,7 @@ Now about the labels:
 * Specify the domain name and all its subdomains (with `*`, which stands for wildcard) that the certificate is going to be valid for
 * Enable the **Traefik** web dashboard
 * Enable the middleware we created above for basic auth
-* Lastly we define the subdomain we want to root to this container (to the dashboard in this case)  
+* Lastly we define the subdomain we want to root to this container (to the dashboard in this case)
 (There's no reason to define which port it gets routed to in this case, the dashboard is an internal **Traefik** thing
 
 At the end of the file we also specify a network named **rawr**. Every container that will be routed to by **Traefik** needs to share a network with it, the name of the network is arbitrary.

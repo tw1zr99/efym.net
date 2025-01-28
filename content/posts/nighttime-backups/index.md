@@ -1,13 +1,14 @@
 ---
 title: "Nighttime Backups 💾"
 date: 2020-08-24T14:10:20+01:00
-tags: [ 'linux', 'backups', 'bash' ]
+tags: ['linux', 'backups', 'bash']
 ---
-The system I use to backup config files from all my boxes.
-
-<!--more-->
-
+#### The system I use to backup configuration files from all my boxes.
 * * *
+
+{{< alert icon="fire" cardColor="#e63946" iconColor="#1d3557" textColor="#f1faee" >}}
+**Update:** This post is no longer how I manage my backups, I have moved to using Restic and more more streamlined approach.
+{{< /alert >}}
 
 When you're like me and try to self-host as many of the services you use as humanly possible, having a reliable backup system is imperative. I have already lost my configs more times than I'd care to admit so I wrote a couple scripts to automate the process.
 
@@ -98,7 +99,7 @@ for box in [CENTRAL BOX] [ROUTER] [BOX 1] [LAPTOP] [VPS 1]; do
 	else
 		mountpoint -q /mnt/boxes/$box || sshfs root@$box:/ /mnt/boxes/$box
 	fi
-	if ! mountpoint -q /mnt/boxes/$box; then 
+	if ! mountpoint -q /mnt/boxes/$box; then
 		echo "couldn't mount $box"
 	fi
 	export BORG_PASSCOMMAND="cat /etc/borg_keys/${box}_key"

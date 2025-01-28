@@ -1,9 +1,8 @@
 ---
 title: "Why I self-host everything I can"
 date: 2021-09-25T07:16:50+01:00
-tag: [ 'privacy' ]
+tag: ['privacy']
 ---
-
 ## Opening remarks
 
 Everyone who knows me or has interacted with me in a meaningful way is aware of my disdain towards major corporations, especially the ones that focus in technology. Most of the reasons for this are more ethical and philosophical in nature than born out of practicality, convenience or economic/monetary incentives.
@@ -28,7 +27,7 @@ This attitude may sound very radical, and to some extent it is, but for me it's 
 
 Another one of the reasons why I'm very opposed to the major tech companies in the world is because of how monolithic they have made the modern Internet. An majority percentage of the total Internet traffic goes to the same 10-15 websites, which of course are all owned by these companies. This allows them to push whatever narrative they choose into the minds of gullible people (which most are) but also since their reach is so massive they can alter real life events and their perception, thus creating a sort of information monopoly.
 
-This was not the case 10 years ago. When the current all-encompassing nature of the Internet wasn't fully realized yet, people visited many different websites around the Internet, most of which were personal sites controlled by a single person; perhaps with less quality but certainly less subjected to ideas used mainly to futher the agenda of a corporation or for raw profits.
+This was not the case 10 years ago. When the current all-encompassing nature of the Internet wasn't fully realized yet, people visited many different websites around the Internet, most of which were personal sites controlled by a single person; perhaps with less quality but certainly less subjected to ideas used mainly to further the agenda of a corporation or for raw profits.
 
 That's why I host my own website. I want to contribute to the few that still think the Internet should be more chaotic and less sanitized. Power and control of information should be more spread out among the people, not in the hands of billionaires.
 
@@ -37,7 +36,7 @@ I believe every person should have a website they control. Most people actually 
 ## E-mail
 
 Sigh... e-mail servers are such a pain in the ass. Every sysadmin in the world knows this, there are many pieces that need to be in sync with each other and you will be put on a blacklist at the first sight of anything even remotely resembling spam coming from your server, on top of that the protocols are not secure by default.
-Most of this is true because e-mail was never designed with security in mind, it's a very old set of protocols that has stuck around too long, to the point where it is probably the most essential method of communication and verification for the mayority of the Internet.
+Most of this is true because e-mail was never designed with security in mind, it's a very old set of protocols that has stuck around too long, to the point where it is probably the most essential method of communication and verification for the majority of the Internet.
 
 It's especially important to remember these things when sending any important information through e-mail which hasn't been encrypted, the contents of e-mails are plain text and anyone sniffing your traffic will be able to read them, your ISP is 100% doing it, for example. So I advice to use something like **PGP** to encrypt sensitive emails.
 

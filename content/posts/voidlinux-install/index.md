@@ -1,21 +1,24 @@
 ---
 title: "Voidlinux Install"
 date: 2021-07-01T19:09:10+01:00
-tags: [ 'linux' ]
+tags: ['linux']
 ---
-Notes on my Void Linux setup.
-
-<!--more-->
-
+#### Notes on my Void Linux setup.
 * * *
 
-Recently I switched the linux distribution I use on my desktop and laptop to Void from Arch. I had used Void before but switched away from it because there were some packages I use missing from their repositories. That point hasn't really changed much, but I thought I'd give it another go anyway.
+{{< alert icon="fire" cardColor="#e63946" iconColor="#1d3557" textColor="#f1faee" >}}
+**Update:** I'm no longer using Void Linux, my desktop and laptop computers run Arch.
+{{< /alert >}}
 
-> **Note:** There's a guide on the [Void Linux docs](https://docs.voidlinux.org/installation/guides/fde.html) page about an installation with encrypted boot, I personally choose to leave my boot partition unencrypted because I think it's largely useless to do it; and also because the Grub bootloader doesn't support luks2 scheme so you're forced to use luks1 which I'm uncomfortable with.
+Recently I switched the Linux distribution I use on my desktop and laptop to Void from Arch. I had used Void before but switched away from it because there were some packages I use missing from their repositories. That point hasn't really changed much, but I thought I'd give it another go anyway.
 
-I use an ISO keyboard with a uk layout, I'm also a heavy vim user so a lot of of the desicions I make are personal preference, YMMV. Here's how I set it up:
+{{< alert icon=" " >}}
+**Note:** There's a guide on the [Void Linux docs](https://docs.voidlinux.org/installation/guides/fde.html) page about an installation with encrypted boot, I personally choose to leave my boot partition unencrypted because I think it's largely useless to do it; and also because the Grub bootloader doesn't support luks2 scheme so you're forced to use luks1 which I'm uncomfortable with.
+{{< /alert >}}
 
-Firstly boot the live iso image into the box you're doing the installation on (won't cover that since it's fairly obvious) and login as root.
+I use an ISO keyboard with a UK layout, I'm also a heavy vim user so a lot of of the decisions I make are personal preference, YMMV. Here's how I set it up:
+
+Firstly boot the live ISO image into the box you're doing the installation on (won't cover that since it's fairly obvious) and login as root.
 
 ## Preparation
 
@@ -41,7 +44,7 @@ root@void-live:~ # bind -m vi-command 'Control-l: clear-screen'
 root@void-live:~ # bind -m vi-insert 'Control-l: clear-screen'
 ```
 
-Change keycode 58 = Escape to make Caps Lock key act as Escape because it's $currentyear
+Change keycode 58 = Escape to make Caps Lock key act as Escape because it's $currentYear
 
 ```
 root@void-live:~ # v /usr/share/kbd/keymaps/i386/qwerty/uk.map.gz
@@ -57,7 +60,7 @@ Ping any website to check internet connection
 root@void-live:~ # ping gnu.org
 ```
 
-Check whether you're booted into uefi or bios
+Check whether you're booted into UEFI or BIOS
 
 ```
 root@void-live:~ # ls /sys/firmware/efi/efivars
@@ -232,7 +235,7 @@ chroot # chmod 600 /var/swapfile
 ```
 
 ```
-chroot # mkswap /var/swapfile 
+chroot # mkswap /var/swapfile
 ```
 
 ```
@@ -260,19 +263,19 @@ UUID=[UUIDOFsda1]           /boot    vfat      defaults         0       0
 
 I use grub as my bootloader, feel free to use any alternatives you like here.
 
-Use this command if running uefi
+Use this command if running UEFI
 
 ```
 chroot # grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id="Void" /dev/sda
 ```
 
-Use this one if running bios
+Use this one if running BIOS
 
 ```
 chroot # grub-install --bootloader-id="Void" /dev/sda
 ```
 
-Use this command to add the UUID of the encrpyted partition /dev/sda2 into /etc/default/grub
+Use this command to add the UUID of the encrypted partition /dev/sda2 into /etc/default/grub
 
 ```
 chroot # blkid -o value -s UUID /dev/sda2 >> /etc/default/grub
@@ -290,7 +293,7 @@ Update grub.cfg
 chroot # grub-mkconfig -o /boot/grub/grub.cfg
 ```
 
-## Finalizing
+## Finalising
 
 ```
 chroot # rm /var/service/agetty-{tty3,tty4,tty5,tty6}

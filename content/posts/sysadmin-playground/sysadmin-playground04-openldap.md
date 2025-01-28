@@ -1,12 +1,12 @@
 ---
 title: "Sysadmin Playground Part 04 | OpenLDAP 👥"
 date: 2021-08-16T02:33:51+01:00
-tags: [ 'sysadmin', 'linux' ]
+tags: ['sysadmin', 'linux']
 series: ['Sysadmin Playground']
 series_order: 4
 ---
-
-> Manage global and centralized user accounts for multiple machines and services.
+#### Manage global and centralized user accounts for multiple machines and services.
+* * *
 
 ## Quick ping check with Ansible ad-hoc command
 

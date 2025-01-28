@@ -1,16 +1,17 @@
 ---
 title: 'Appalling Anysoftkeyboard ⌨️ "Feature"'
 date: 2021-10-13T12:54:02+01:00
-tags: [ 'mobile', 'android', 'propaganda' ]
+tags: ['mobile', 'android', 'propaganda']
 ---
->When developers turn their software into a propaganda tool.
+#### When developers turn their software into a propaganda tool.
+* * *
 
 First off let me clarify that the word "feature" in this post's title is being used extremely sarcastically; I'm not one to stress much about mobile phones, I'm not a huge fan of them and use them very sparingly but I still own one. It runs [LineageOS](https://lineageos.org) and every single application installed on it was downloaded from [F-Droid](https://f-droid.org), so no proprietary software at all in userland.
 
 For approximately four years I've been using AnySoftKeyboard as the keyboard software and I've been very happy with it, the features are good, the customization is good and the multiple language support—which I use a lot—is also good. I've recommended it to many people plenty of times.
 
 Nearly two years ago when the COVID-19 ordeal began to cause worldwide concern the developers of the aforementioned keyboard application chose to push an update which included a link on the keyboard's suggestion bar to the website of some health organization with the text: "**Keep safe! Click for info on CoronaVirus.**"
-Afer a few seconds the link dissapeared along with its icon and text.
+After a few seconds the link disappeared along with its icon and text.
 
 I found the decision to include this on a keyboard application slightly puzzling, but since it was a one time thing and I never saw it again I disregarded it and actually even forgot that it had happened until recently.
 
@@ -26,7 +27,7 @@ In case you can't be bothered to follow that link and read the entire discussion
 
 The last time I updated the application it would display the link permanently, the text disappeared after two seconds but the icon containing the link would not. It is said in this Github issue that after some use of the keyboard the link would disappear completely, I used it for a few more hours and it didn't.
 
-I'm not even going to get into what I personally think about the virus because my thoughts on the subject are not particularly relevant to the point I'm trying to make. The problem is that the developers of the application are choosing to use your keyboard to display something other than keys; very uselessly I might add since information about COVID-19 is readily available in literally millions of websites around the Internet, I find this behaviour to be excrutiatingly propagandistic and I will not tolerate it.
+I'm not even going to get into what I personally think about the virus because my thoughts on the subject are not particularly relevant to the point I'm trying to make. The problem is that the developers of the application are choosing to use your keyboard to display something other than keys; very uselessly I might add since information about COVID-19 is readily available in literally millions of websites around the Internet, I find this behaviour to be excruciatingly propagandistic and I will not tolerate it.
 
 So I went ahead and uninstalled AnySoftKeyboard for good.
 
