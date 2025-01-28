@@ -9,15 +9,15 @@ title = "efym.net"
   isoCode = "en"
   rtl = false
   dateFormat = "2 January 2006"
-  logo = "static/svg/net.svg"
-  secondaryLogo = "img/secondary-logo.png"
-  description = "My awesome website"
+  logo = ""
+  # secondaryLogo = "img/secondary-logo.png"
+  # description = "My awesome website"
   copyright = "licensed under cc by-nc-sa 4.0"
 
 [params.author]
   name = "tw1zr"
   email = "tw1zr@efym.net"
-  image = "img/blowfish_logo.png"
+  image = "pp.gif"
   imageQuality = 96
   # headline = "I'm only human"
   bio = "DevOps Engineer"
