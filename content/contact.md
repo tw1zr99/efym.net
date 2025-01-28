@@ -1,5 +1,5 @@
 ---
-title: "contact"
+title: "Contact"
 ---
 | 💬 matrix  | [@tw1zr:efym.net](https://matrix.to/#/@tw1zr:efym.net) |
 |------------|--------------------------------------------------------|
@@ -16,4 +16,4 @@ Do keep in mind that I won't hesitate to delete and block e-mails pertaining sen
 
 If I know you in real life the best way to contact me on a regular basis is through Matrix. My personal homeserver **efym.net** is not currently accepting registrations, but you can still contact me from other homeservers since federation is enabled.
 
-I am not in any social media sites whatsoever so don't bother looking for me in any of those. Instead, take some time to read this: [Digital Diseases](/blog/digital-diseases) and this: [Why I self-host everything I can](/blog/why-i-self-host).
+I am not in any social media sites whatsoever so don't bother looking for me in any of those. Instead, take some time to read this: [Digital Diseases](/posts/digital-diseases) and this: [Why I self-host everything I can](/posts/why-i-self-host).

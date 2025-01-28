@@ -1,5 +1,5 @@
 ---
-title: "about"
+title: "About"
 ---
 ## Intro
 
@@ -41,7 +41,16 @@ These are the main programs I use on my desktop/laptop, but they're far from the
 
 Here are a few screenshots showing what my computer looks like during various activities:
 
-{{< about-computer-images >}}
+{{< gallery >}}
+  <img src="/about/1.webp" class="grid-w33" />
+  <img src="/about/2.webp" class="grid-w33" />
+  <img src="/about/3.webp" class="grid-w33" />
+  <img src="/about/4.webp" class="grid-w33" />
+  <img src="/about/5.webp" class="grid-w33" />
+  <img src="/about/6.webp" class="grid-w33" />
+  <img src="/about/7.webp" class="grid-w33" />
+  <img src="/about/8.webp" class="grid-w33" />
+{{< /gallery >}}
 
 Like I mentioned before I try to use the command-line for everything I can and the reason for this is very simple: it's generally the most efficient way of getting things done. Though I will admit my 10 year old self was fascinated by the hollywood-esque appeal of fast paced stuff popping on a computer screen, this is not the case anymore. I've interacted with computers in many ways and using the command-line is just the most precise way I've found.
 However, there are exceptions to the previous sentences, for instance things that require direct interaction with graphic media (like photo/video editing) and even web-browsing (because the modern web is a bloated and cumbersome mess) are better accomplished with a graphical user interface; so when I have to edit a picture I use [GIMP](https://gimp.org) and in the rare cases I have to edit a video I use [OpenShot](https://openshot.org).

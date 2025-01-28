@@ -1,6 +1,0 @@
-<strong>This post is part of a series, follow the links to the other parts:</strong>
-<br>
-{{ $t := slice "sysadmin" }}
-{{ range where .Site.Pages.Reverse ".Params.tags" "intersect" $t }}
-<a href="{{ .RelPermalink }}">{{ .Title }}</a><br>
-{{ end }}

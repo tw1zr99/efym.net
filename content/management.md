@@ -1,4 +1,3 @@
 ---
-title: "management"
+title: "Management"
 ---
-{{< management >}}

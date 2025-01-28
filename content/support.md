@@ -1,4 +1,3 @@
 ---
-title: "support"
+title: "Support"
 ---
-{{< support >}}
