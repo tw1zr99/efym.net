@@ -1,18 +1,11 @@
 ---
 title: "Sysadmin Playground Part 01 | Intro"
 date: 2021-07-06T21:29:23+01:00
-tags: ['sysadmin', 'linux']
+tags: [ 'sysadmin', 'linux' ]
+series: ['Sysadmin Playground']
+series_order: 1
 ---
-Recreation of a lab environment with Terraform and Ansible.
-
-<!--more-->
-
-* * *
-
-* * *
-
-
-Recently I came accross a 6 years old post on reddit wherein a person described what he thought were the most important areas of enterprise Linux systems administration, I decided to recreate it. Since I haven't worked much with enterprise software this will be both fun and challenging for me.
+Recently I came across a 6 years old post on Reddit wherein a person described what he thought were the most important areas of enterprise Linux systems administration, I decided to recreate it. Since I haven't worked much with enterprise software this will be both fun and challenging for me.
 
 **Link:** [How did you get your start](https://teddit.net/r/linuxadmin/comments/2s924h/how_did_you_get_your_start/cnnw1ma/)
 
@@ -48,7 +41,7 @@ There are a number of caveats because of the age of the post. Some of the softwa
 ## Here are some of the changes I'm planning to make:
 
 * **Terraform** with cloud-init instead of **Spacewalk**.
-At first I thought about using **Foreman** as an alternative to **Spacewalk** but it seemed unnecesarily bloated, not to mention if I use containers for most things and **Terraform** to manage the VMs I don't really need **pxeboot**; it could still be used but doesn't seem worth it.
+At first I thought about using **Foreman** as an alternative to **Spacewalk** but it seemed unnecessarily bloated, not to mention if I use containers for most things and **Terraform** to manage the VMs I don't really need **pxeboot**; it could still be used but doesn't seem worth it.
 
 * **Docker** containers instead of **VMs** for some services.
 **Docker** containers carry much less overhead than full blown **VMs** and I'm planning to host all of this on my homeserver which isn't near close to enterprise hardware plus it's already running personal services of mine. Also I understand they're used nowadays in most enterprise infrastructures I know of.

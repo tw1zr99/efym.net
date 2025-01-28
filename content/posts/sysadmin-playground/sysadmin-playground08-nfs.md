@@ -2,14 +2,11 @@
 title: "Sysadmin Playground Part 08 | NFS 💽"
 date: 2021-09-28T08:12:26+01:00
 tags: [ 'sysadmin', 'linux' ]
+series: ['Sysadmin Playground']
+series_order: 8
 ---
-COnsolidate users' home directory in an external storage server and make it seamlessly accessible from every machine on the network.
 
-<!--more-->
-
-* * *
-
-* * *
+> Consolidate users' home directory in an external storage server and make it seamlessly accessible from every machine on the network.
 
 ## NFS server
 

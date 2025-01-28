@@ -2,14 +2,11 @@
 title: "Sysadmin Playground Part 07 | E-mail ✉️"
 date: 2021-09-26T17:28:08+01:00
 tags: [ 'sysadmin', 'linux' ]
+series: ['Sysadmin Playground']
+series_order: 7
 ---
-Create and configure an internal e-mail system for intra-site communication and alerts.
 
-<!--more-->
-
-* * *
-
-* * *
+> Create and configure an internal e-mail system for intra-site communication and alerts.
 
 ## E-mail container
 

@@ -2,14 +2,11 @@
 title: "Sysadmin Playground Part 02 | Terraform and KVM 🖥"
 date: 2021-07-13T01:02:51+01:00
 tags: [ 'sysadmin', 'linux' ]
+series: ['Sysadmin Playground']
+series_order: 2
 ---
-Using Terraform with the KVM provider and cloud-init to spin up virtual machines while keeping the infrastructure's configuration as code.
 
-<!--more-->
-
-* * *
-
-* * *
+> Using Terraform with the KVM provider and cloud-init to spin up virtual machines while keeping the infrastructure's configuration as code.
 
 ## Visualizing the topology
 

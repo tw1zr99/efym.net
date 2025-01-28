@@ -2,14 +2,11 @@
 title: "Sysadmin Playground Part 06 | Centralized Logs 📄"
 date: 2021-09-24T15:38:24+01:00
 tags: [ 'sysadmin', 'linux' ]
+series: ['Sysadmin Playground']
+series_order: 6
 ---
-Configure Docker containers to send their logs to a centralized location for analysis and long term storage.
 
-<!--more-->
-
-* * *
-
-* * *
+> Configure Docker containers to send their logs to a centralized location for analysis and long term storage.
 
 ## New VMs
 

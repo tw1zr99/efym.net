@@ -2,15 +2,12 @@
 title: "Sysadmin Playground Part 09 | 🔍 Grafana Monitoring (with a twist)"
 date: 2022-08-31T09:23:29+01:00
 tags: [ 'sysadmin', 'linux', 'monitoring' ]
-draft: yes
+series: ['Sysadmin Playground']
+series_order: 9
+draft: no
 ---
-Visualize machines resource usage in beautiful Grafana dashboards and create e-mail alerts to notify you when services fail.
 
-<!--more-->
-
-* * *
-
-* * *
+> Visualise machines resource usage in beautiful Grafana dashboards and create e-mail alerts to notify you when services fail.
 
 ## Infrastructure twist
 

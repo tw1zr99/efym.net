@@ -3,27 +3,23 @@ title: 'Appalling Anysoftkeyboard ⌨️ "Feature"'
 date: 2021-10-13T12:54:02+01:00
 tags: [ 'mobile', 'android', 'propaganda' ]
 ---
-When developers turn their software into a propaganda tool.
-
-<!--more-->
-
-* * *
+>When developers turn their software into a propaganda tool.
 
 First off let me clarify that the word "feature" in this post's title is being used extremely sarcastically; I'm not one to stress much about mobile phones, I'm not a huge fan of them and use them very sparingly but I still own one. It runs [LineageOS](https://lineageos.org) and every single application installed on it was downloaded from [F-Droid](https://f-droid.org), so no proprietary software at all in userland.
 
 For approximately four years I've been using AnySoftKeyboard as the keyboard software and I've been very happy with it, the features are good, the customization is good and the multiple language support—which I use a lot—is also good. I've recommended it to many people plenty of times.
 
-Nearly two years ago when the COVID-19 ordeal began to cause worldwide concern the developers of the aforementioned keyboard application chose to push an update which included a link on the keyboard's suggestion bar to the website of some health organization with the text: "**Keep safe! Click for info on CoronaVirus.**"  
-Afer a few seconds the link dissapeared along with its icon and text.  
+Nearly two years ago when the COVID-19 ordeal began to cause worldwide concern the developers of the aforementioned keyboard application chose to push an update which included a link on the keyboard's suggestion bar to the website of some health organization with the text: "**Keep safe! Click for info on CoronaVirus.**"
+Afer a few seconds the link dissapeared along with its icon and text.
 
 I found the decision to include this on a keyboard application slightly puzzling, but since it was a one time thing and I never saw it again I disregarded it and actually even forgot that it had happened until recently.
 
-It wasn't until the latest update when it became unacceptable for me.  
+It wasn't until the latest update when it became unacceptable for me.
 Here's what it looks like:
 
 ![](/blog/appalling-anysoftkeyboard-feature/1.png)
 
-The first thing I did after this thing popped on my screen a second time was to go to the project's Github page, the application is open source after all. Not at all to my surprise I found other people were already complaining, [this](https://github.com/AnySoftKeyboard/AnySoftKeyboard/issues/2914) specific issue was the one which shed the most light on the situation.  
+The first thing I did after this thing popped on my screen a second time was to go to the project's Github page, the application is open source after all. Not at all to my surprise I found other people were already complaining, [this](https://github.com/AnySoftKeyboard/AnySoftKeyboard/issues/2914) specific issue was the one which shed the most light on the situation.
 In case you can't be bothered to follow that link and read the entire discussion, here's a screenshot of what one of the lead developers said:
 
 ![](/blog/appalling-anysoftkeyboard-feature/2.png)
