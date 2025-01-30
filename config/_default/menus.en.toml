@@ -12,27 +12,27 @@
 
 [[main]]
  name = "About"
- url = "/about"
+ url = "/about/"
  weight = 1
 
 [[main]]
  name = "Posts"
- url = "/posts"
+ url = "/posts/"
  weight = 2
 
 [[main]]
  name = "Services"
- url = "/services"
+ url = "/services/"
  weight = 3
 
 [[main]]
  name = "Support"
- url = "/support"
+ url = "/support/"
  weight = 4
 
 [[main]]
  name = "Contact"
- url = "/contact"
+ url = "/contact/"
  weight = 5
 
 [[main]]

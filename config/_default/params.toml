@@ -17,7 +17,7 @@ replyByEmail = false
 # mainSections = ["section1", "section2"]
 # robots = ""
 
-disableImageOptimization = false
+disableImageOptimization = true
 disableTextInHeader = false
 # backgroundImageWidth = 1200
 
@@ -53,10 +53,10 @@ forgejoDefaultServer = "https://v8.next.forgejo.org"
   layoutBackgroundBlur = false # only used when layout equals background
 
 [article]
-  showDate = true
+  showDate = false
   showViews = false
   showLikes = false
-  showDateOnlyInArticle = true
+  showDateOnlyInArticle = false
   showDateUpdated = false
   showAuthor = true
   # showAuthorBottom = false

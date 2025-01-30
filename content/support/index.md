@@ -1,3 +1,4 @@
 ---
 title: "Support"
+showDate: true
 ---
