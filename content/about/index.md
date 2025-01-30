@@ -5,9 +5,9 @@ showDate: ""
 
 ## Intro
 
-I'm **tw1zr**, a dedicated **GNU/Linux** sysadmin, DevOps Engineer and free software advocate. Also, a master of irony.
+I'm **tw1zr**, a dedicated **GNU/Linux** sysadmin, DevOps Engineer and free software advocate. My real name is George, well met.
 
-My real name is George, and I currently work as a DevOps Engineer for a software company in Brighton, UK. I navigate the depths of Linux from the ominous black boxes known as terminal emulators.
+I navigate the inner depths of servers from the ominous black boxes known as terminal emulators.
 
 ## Software and Workflow
 
@@ -15,7 +15,7 @@ I _exclusively_ use **GNU/Linux** on every device. My desktop and laptop run [Ar
 
 A staunch **neovim** enthusiast, I customise 99% of my computer interactions with **vim**-like keybindings and rely heavily on the command line for most tasks.
 
-Here’s my essential toolkit:
+Here's my essential toolkit:
 
 - **Window Manager:** [awesomeWM](https://github.com/awesomeWM/awesome)
 - **Application Launcher:** [rofi](https://github.com/davatorium/rofi)

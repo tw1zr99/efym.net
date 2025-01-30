@@ -2,6 +2,17 @@
 title: "Contact"
 ---
 
+{{< alert icon="check" cardColor="#2c922c" iconColor="#1d3557" textColor="#f1faee" >}}
+**Happily employed**
+
+I currently work as a DevOps Engineer for a software company in Brighton, UK.
+{{< /alert >}}
+<!--{{< alert icon="fire" cardColor="#e63946" iconColor="#1d3557" textColor="#f1faee" >}}-->
+<!--**I'm looking for work**-->
+<!---->
+<!--Contact me for a CV and references, or a phone call. I'll dazzle you.-->
+<!--{{< /alert >}}-->
+
 Anything sensitive or containing personal information that needs to be sent through e-mail must be PGP encrypted using the above key.
 From a GNU/Linux box you can import the PGP key into your keyring thusly:
 ```
