@@ -1,6 +1,7 @@
 ---
 title: "Sysadmin Playground Part 07 | E-mail ✉️"
 date: 2021-09-26T17:28:08+01:00
+showDate: true
 tags: ['sysadmin', 'linux']
 series: ['Sysadmin Playground']
 series_order: 7

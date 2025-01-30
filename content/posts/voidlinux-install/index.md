@@ -1,6 +1,7 @@
 ---
 title: "Voidlinux Install"
 date: 2021-07-01T19:09:10+01:00
+showDate: true
 tags: ['linux']
 ---
 #### Notes on my Void Linux setup.

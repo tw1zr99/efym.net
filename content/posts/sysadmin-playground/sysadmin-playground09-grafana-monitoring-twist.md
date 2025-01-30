@@ -1,6 +1,7 @@
 ---
 title: "Sysadmin Playground Part 09 | 🔍 Grafana Monitoring (with a twist)"
 date: 2022-08-31T09:23:29+01:00
+showDate: true
 tags: ['sysadmin', 'linux', 'monitoring']
 series: ['Sysadmin Playground']
 series_order: 9

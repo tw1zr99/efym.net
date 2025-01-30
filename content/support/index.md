@@ -1,4 +1,4 @@
 ---
 title: "Support"
-showDate: true
+showAuther: false
 ---

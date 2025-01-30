@@ -1,6 +1,7 @@
 ---
 title: "🚦 Traefik configuration and easy routing"
 date: 2022-08-20T11:11:59+01:00
+showDate: true
 tags: ['linux', 'routing']
 ---
 #### My configuration for Traefik with wildcard TLS certificates.

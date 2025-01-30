@@ -1,6 +1,7 @@
 ---
 title: "About Moderation 🔧"
 date: 2021-05-14T17:03:06+01:00
+showDate: true
 tags: ['efym.net', 'moderation']
 ---
 #### My thoughts on moderation.

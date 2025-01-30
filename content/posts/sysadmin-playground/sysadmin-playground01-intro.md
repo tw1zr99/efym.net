@@ -1,6 +1,7 @@
 ---
 title: "Sysadmin Playground Part 01 | Intro"
 date: 2021-07-06T21:29:23+01:00
+showDate: true
 tags: ['sysadmin', 'linux']
 series: ['Sysadmin Playground']
 series_order: 1

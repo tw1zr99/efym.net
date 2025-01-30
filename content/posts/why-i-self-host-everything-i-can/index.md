@@ -1,6 +1,7 @@
 ---
 title: "Why I self-host everything I can"
 date: 2021-09-25T07:16:50+01:00
+showDate: true
 tag: ['privacy']
 ---
 ## Opening remarks

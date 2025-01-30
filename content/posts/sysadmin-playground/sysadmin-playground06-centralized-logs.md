@@ -1,6 +1,7 @@
 ---
 title: "Sysadmin Playground Part 06 | Centralized Logs 📄"
 date: 2021-09-24T15:38:24+01:00
+showDate: true
 tags: ['sysadmin', 'linux']
 series: ['Sysadmin Playground']
 series_order: 6

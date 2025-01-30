@@ -1,6 +1,7 @@
 ---
 title: "Sysadmin Playground Part 02 | Terraform and KVM 🖥"
 date: 2021-07-13T01:02:51+01:00
+showDate: true
 tags: ['sysadmin', 'linux']
 series: ['Sysadmin Playground']
 series_order: 2

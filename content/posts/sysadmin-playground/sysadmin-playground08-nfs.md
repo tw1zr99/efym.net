@@ -1,6 +1,7 @@
 ---
 title: "Sysadmin Playground Part 08 | NFS 💽"
 date: 2021-09-28T08:12:26+01:00
+showDate: true
 tags: ['sysadmin', 'linux']
 series: ['Sysadmin Playground']
 series_order: 8

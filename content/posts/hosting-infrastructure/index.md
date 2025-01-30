@@ -1,6 +1,7 @@
 ---
 title: "Hosting Infrastructure"
 date: 2020-08-22T10:26:54+01:00
+showDate: true
 tags: ['privacy', 'linux', 'vps', 'hosting']
 ---
 #### Trying to move into a server that gives better control over VPS boxes while retaining the privacy given by no-account, no sign-up and crypto payed deployments.

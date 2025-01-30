@@ -1,6 +1,7 @@
 ---
 title: "Cage Rattling Thoughts on Software"
 date: 2020-09-04T09:52:25+01:00
+showDate: true
 tags: ['free software']
 ---
 #### Quick and dirty ramblings about free software and the other, stupid and harmful type.
