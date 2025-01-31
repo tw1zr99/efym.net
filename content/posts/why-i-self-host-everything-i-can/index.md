@@ -55,6 +55,6 @@ If you must use e-mail and know your way around Linux then I personally think se
 
 Vincent Canfield of [cock.li](https://cock.li) has on his website a paragraph and a quote apparently taken from 4chan which are quite apt to describe what I'm trying to say about e-mail:
 
-![](1.png)
+![](01.png)
 
 There are also more specific services I host on the Internet or at home (always in a server which I have root access to) and the reason for those are largely the same ones I've already explained.

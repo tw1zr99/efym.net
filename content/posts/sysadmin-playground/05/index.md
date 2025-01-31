@@ -6,7 +6,7 @@ tags: ['sysadmin', 'linux']
 series: ['Sysadmin Playground']
 series_order: 5
 ---
-#### Generating hardened passwords and encrypting them with Ansible Vault.
+Generating hardened passwords and encrypting them with Ansible Vault.
 * * *
 
 ## Hardening Passwords

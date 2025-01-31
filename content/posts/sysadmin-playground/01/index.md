@@ -10,9 +10,8 @@ Recently I came across a 6 years old post on Reddit wherein a person described w
 
 **Link:** [How did you get your start](https://www.reddit.com/r/linuxadmin/comments/2s924h/comment/cnnw1ma/)
 
-**These are the words from his post:**
+## These are the words from his post
 
-```
 This is what I tell people to do, who ask me "how do I learn to be a Linux sysadmin?".
 1) Set up a KVM hypervisor.
 2) Inside of that KVM hypervisor, install a Spacewalk server. Use CentOS 6 as the distro for all work below. (For bonus points, set up errata importation on the CentOS channels, so you can properly see security update advisory information.)
@@ -35,22 +34,21 @@ This is what I tell people to do, who ask me "how do I learn to be a Linux sysad
 19) Destroy every secondary machine you've created and use the above profile to recreate them, joining them to the clusters as needed.
 20) Bonus exercise: create three more VMs. A CentOS 5, 6, and 7 machine. On each of these machines, set them up to allow you to create custom RPMs and import them into the Spacewalk server instance. Ensure your Puppet configurations work for all three and produce like-for-like behaviors.
 Do these things and you will be fully exposed to every aspect of Linux Enterprise systems administration. Do them well and you will have the technical expertise required to seek "Senior" roles. If you go whole-hog crash-course full-time it with no other means of income, I would expect it would take between 3 and 6 months to go from "I think I'm good with computers" to achieving all of these -- assuming you're not afraid of IRC and google (and have neither friends nor family ...).
-```
 
 There are a number of caveats because of the age of the post. Some of the software mentioned here has reached—or is about to reach—EOL (namely **Spacewalk** and **CentOS**). Also for my recreation I will make some changes based on my own personal preference and familiarity with alternatives.
 
-## Here are some of the changes I'm planning to make:
+## Some of the changes I'm planning to make
 
-* **Terraform** with cloud-init instead of **Spacewalk**.
+- **Terraform** with cloud-init instead of **Spacewalk**.
 At first I thought about using **Foreman** as an alternative to **Spacewalk** but it seemed unnecessarily bloated, not to mention if I use containers for most things and **Terraform** to manage the VMs I don't really need **pxeboot**; it could still be used but doesn't seem worth it.
 
-* **Docker** containers instead of **VMs** for some services.
+- **Docker** containers instead of **VMs** for some services.
 **Docker** containers carry much less overhead than full blown **VMs** and I'm planning to host all of this on my homeserver which isn't near close to enterprise hardware plus it's already running personal services of mine. Also I understand they're used nowadays in most enterprise infrastructures I know of.
 
-* **Debian** instead of **CentOS**.
+- **Debian** instead of **CentOS**.
 Never been a fan of **CentOS** or **RHEL** (and most recently **Rocky Linux**), I know they're enterprise standards but I much, much prefer **Debian**.
-* **Ansible** instead of **Puppet**.
+- **Ansible** instead of **Puppet**.
 I'm very familiar with **Ansible**, I've used it in various different deployments. I like that it doesn't require a daemon running on the clients and instead uses ssh with a Python backend. Maybe I'll try to recreate the configuration with **Puppet** in the future.
-* **nginx** instead of **Apache2**.
+- **nginx** instead of **Apache2**.
 
 And there will possibly be other changes which I'll try to document as I go (this post probably will also be updated periodically).

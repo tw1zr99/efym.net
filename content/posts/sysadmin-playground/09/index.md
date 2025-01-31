@@ -5,9 +5,9 @@ showDate: true
 tags: ['sysadmin', 'linux', 'monitoring']
 series: ['Sysadmin Playground']
 series_order: 9
-draft: yes
+draft: no
 ---
-#### Visualise machines resource usage in beautiful Grafana dashboards and create e-mail alerts to notify you when services fail.
+Visualise machines resource usage in beautiful Grafana dashboards and create e-mail alerts to notify you when services fail.
 * * *
 
 ## Infrastructure twist
@@ -18,7 +18,7 @@ In this post I'll be showing the deployment with **docker-compose** in my own pe
 
 ## The goal
 
-![](/blog/sysadmin-playground/15.png)
+![](01.png)
 
 As you can see in the picture, that is a **Grafana** dashboard which shows CPU, RAM and disk usage on 2 boxes (**snazzy** and **vera**).
 

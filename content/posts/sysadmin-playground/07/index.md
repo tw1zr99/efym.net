@@ -6,7 +6,7 @@ tags: ['sysadmin', 'linux']
 series: ['Sysadmin Playground']
 series_order: 7
 ---
-#### Create and configure an internal e-mail system for intra-site communication and alerts.
+Create and configure an internal e-mail system for intra-site communication and alerts.
 * * *
 
 ## E-mail container
@@ -314,17 +314,17 @@ Assuming everything went well, let's test our new e-mail service.
 
 Landing screen from the browser:
 
-![](/blog/sysadmin-playground/9.png)
+![](01.png)
 
 Let's login as any of the users in our **LDAP** server and send an e-mail to any other user to test if everything is working correctly.
 
 In the following picture I've logged in as **tw1zr** and I'm sending an e-mail to **guest1**:
 
-![](/blog/sysadmin-playground/10.png)
+![](02.png)
 
 Now in this picture I logged in as **guest1** and we can see the e-mail is received, perfect.
 
-![](/blog/sysadmin-playground/11.png)
+![](03.png)
 
 Now I'll use **sendEmail** to send an e-mail from the command line. Let's authenticate as **guest1** and send something to **tw1zr**, **ssh** into any of the virtual machines and issue the following command:
 
@@ -334,4 +334,4 @@ $ sendEmail -o tls=yes -xu guest1@pygrn.lab -xp Ln9CQMsDZA -f guest1@pygrn.lab -
 
 Login as **tw1zr** again, and we can see the e-mail was succesfully sent and received:
 
-![](/blog/sysadmin-playground/12.png)
+![](04.png)

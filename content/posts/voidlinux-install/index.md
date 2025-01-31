@@ -4,7 +4,7 @@ date: 2021-07-01T19:09:10+01:00
 showDate: true
 tags: ['linux']
 ---
-#### Notes on my Void Linux setup.
+Notes on my Void Linux setup.
 * * *
 
 {{< alert icon="fire" cardColor="#e63946" iconColor="#1d3557" textColor="#f1faee" >}}

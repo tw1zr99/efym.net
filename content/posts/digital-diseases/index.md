@@ -4,7 +4,7 @@ date: 2021-05-04T20:10:47+01:00
 showDate: true
 tags: ['privacy', 'bigtech']
 ---
-#### A few thoughts on why social media is a cancerous institution.
+A few thoughts on why social media is a cancerous institution.
 * * *
 
 Every single person on the face of the earth thinks they're special, different from the rest and that their motives are so intricate and complex nobody could possibly decipher them.

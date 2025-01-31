@@ -4,12 +4,14 @@ date: 2020-08-24T14:10:20+01:00
 showDate: true
 tags: ['linux', 'backups', 'bash']
 ---
-#### The system I use to backup configuration files from all my boxes.
+The system I use to backup configuration files from all my boxes.
 * * *
 
 {{< alert icon="fire" cardColor="#e63946" iconColor="#1d3557" textColor="#f1faee" >}}
 **Update:** This post is no longer how I manage my backups, I have moved to using Restic and more more streamlined approach.
 {{< /alert >}}
+
+## Preamble
 
 When you're like me and try to self-host as many of the services you use as humanly possible, having a reliable backup system is imperative. I have already lost my configs more times than I'd care to admit so I wrote a couple scripts to automate the process.
 

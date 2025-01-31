@@ -4,7 +4,7 @@ date: 2021-10-13T12:54:02+01:00
 showDate: true
 tags: ['mobile', 'android', 'propaganda']
 ---
-#### When developers turn their software into a propaganda tool.
+When developers turn their software into a propaganda tool.
 * * *
 
 First off let me clarify that the word "feature" in this post's title is being used extremely sarcastically; I'm not one to stress much about mobile phones, I'm not a huge fan of them and use them very sparingly but I still own one. It runs [LineageOS](https://lineageos.org) and every single application installed on it was downloaded from [F-Droid](https://f-droid.org), so no proprietary software at all in userland.
@@ -19,12 +19,12 @@ I found the decision to include this on a keyboard application slightly puzzling
 It wasn't until the latest update when it became unacceptable for me.
 Here's what it looks like:
 
-![](/blog/appalling-anysoftkeyboard-feature/1.png)
+![](01.png)
 
 The first thing I did after this thing popped on my screen a second time was to go to the project's Github page, the application is open source after all. Not at all to my surprise I found other people were already complaining, [this](https://github.com/AnySoftKeyboard/AnySoftKeyboard/issues/2914) specific issue was the one which shed the most light on the situation.
 In case you can't be bothered to follow that link and read the entire discussion, here's a screenshot of what one of the lead developers said:
 
-![](/blog/appalling-anysoftkeyboard-feature/2.png)
+![](02.png)
 
 The last time I updated the application it would display the link permanently, the text disappeared after two seconds but the icon containing the link would not. It is said in this Github issue that after some use of the keyboard the link would disappear completely, I used it for a few more hours and it didn't.
 
@@ -36,6 +36,6 @@ It's a shame, really. Because I liked it and I still think it's a well coded pie
 
 For the past few days I've been using [OpenBoard](https://f-droid.org/en/packages/org.dslul.openboard.inputmethod.latin) and it gets the job done, the layout is slightly less convenient as you can see in the pictures below (or maybe I'm just used to something different) but I'd very much rather a slight inconvenience while typing on my phone than having a constant reminder in my face about this years' flu.
 
-![](/blog/appalling-anysoftkeyboard-feature/3.png)
+![](03.png)
 
 I would urge every software developer who might read this to please keep your application's functionality focused on what you actually built it to do and do not use whatever platform you may have to push your social/political/economic/etc agenda unto your users.

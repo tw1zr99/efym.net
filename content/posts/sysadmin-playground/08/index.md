@@ -6,22 +6,22 @@ tags: ['sysadmin', 'linux']
 series: ['Sysadmin Playground']
 series_order: 8
 ---
-#### Consolidate users' home directory in an external storage server and make it seamlessly accessible from every machine on the network.
+Consolidate users' home directory in an external storage server and make it seamlessly accessible from every machine on the network.
 * * *
 
 ## NFS server
 
-Through the **LDAP** server we deployed previously we have achieved a centralized authentication management, to compliment that I think it's pertinent that the `/home` directory is centralized too, in a way that every virtual machine has it as a mount-point directed to a file server located at **tyule.pygrn.lab**, instead of each box having a local directory for it separate from the other boxes.
+Through the **LDAP** server we deployed previously we have achieved a centralised authentication management, to compliment that I think it's pertinent that the `/home` directory is centralised too, in a way that every virtual machine has it as a mount-point directed to a file server located at **tyule.pygrn.lab**, instead of each box having a local directory for it separate from the other boxes.
 
-There are many protocols and network filesystems that would help us create this type of centralized storage, in this chapter we're going to be using **NFS** which is one of the more widespread services used to accomplish our objective.
+There are many protocols and network filesystems that would help us create this type of centralised storage, in this chapter we're going to be using **NFS** which is one of the more widespread services used to accomplish our objective.
 
 One of the problem with **NFS** is that it doesn't support **TLS** encryption (or any other form of encryption) natively. Anyone sniffing the network could grab the packets in-transit; a standard **NFS** connection looks like this:
 
-![](/blog/sysadmin-playground/13.png)
+![](01.png)
 
 But we're going to get around that by creating a tunnel with [stunnel](https://www.stunnel.org) through which the connection between the **NFS** client and the server will flow; it'll be more like this:
 
-![](/blog/sysadmin-playground/14.png)
+![](02.png)
 
 We will also encrypt the partition which will hold the filesystem that hosts the **NFS** export with **luks** to protect our users' data at rest.
 

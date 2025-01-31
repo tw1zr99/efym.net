@@ -1,12 +1,12 @@
 ---
-title: "Sysadmin Playground Part 06 | Centralized Logs 📄"
+title: "Sysadmin Playground Part 06 | Centralised Logs 📄"
 date: 2021-09-24T15:38:24+01:00
 showDate: true
 tags: ['sysadmin', 'linux']
 series: ['Sysadmin Playground']
 series_order: 6
 ---
-#### Configure Docker containers to send their logs to a centralized location for analysis and long term storage.
+Configure Docker containers to send their logs to a centralised location for analysis and long term storage.
 * * *
 
 ## New VMs
@@ -19,7 +19,7 @@ Don't forget to update the KVM network settings on the hypervisor to give these 
 
 Here's an updated topology diagram:
 
-![](/blog/sysadmin-playground/8.png)
+![](01.png)
 
 The new boxes are VM-4 onwards.
 Their names are largely irrelevant, I made these up randomly. But we have to keep them consistent with different configurations in many places, so if you're followig along and decide to use different names you will need to replace them in many places accross the config files.
@@ -28,7 +28,7 @@ Their names are largely irrelevant, I made these up randomly. But we have to kee
 
 In order to troubleshoot any problems in any server environment keeping track of the logs is extremely important; reading the logs is almost always the way to discover what went wrong and how to fix it.
 
-The most common way to centralize logs is with the Elastic Stack (which is comprised of **Elasticsearch**, **Logstash** and **Kibana**). I won't be deploying that today, I will instead use a much simpler and traditional **syslog** server.
+The most common way to centralise logs is with the Elastic Stack (which is comprised of **Elasticsearch**, **Logstash** and **Kibana**). I won't be deploying that today, I will instead use a much simpler and traditional **syslog** server.
 _(It's entirely possible that I'll change my mind and deploy the ELK stack in the near future.)_
 
 We're going to deploy a container running a **Syslog-ng** server listening on a specific port, then reconfigure every container we have deployed previously (and every future one) to use a different log driver than the default **Docker** one, the **syslog** logging driver will send every container's log to this server. This will allow us to have one place where we can go look at all the logs for every container in every virtual machine.

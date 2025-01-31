@@ -6,7 +6,7 @@ tags: ['sysadmin', 'linux']
 series: ['Sysadmin Playground']
 series_order: 4
 ---
-#### Manage global and centralized user accounts for multiple machines and services.
+Manage global and centralized user accounts for multiple machines and services.
 * * *
 
 ## Quick ping check with Ansible ad-hoc command
@@ -486,7 +486,7 @@ $ ssh -L 6080:192.168.122.2:6080 root@[IP of hypervisor] -N
 
 Open a web browser and go to **localhost:6080**. When the page loads try to login into the **LDAP** server with the credentials we defined for the **Docker** container.
 
-![](/blog/sysadmin-playground/4.png)
+![](01.png)
 
 ## Modifying the LDAP server
 
@@ -507,7 +507,7 @@ ldapadd -ZZ -H ldap://cutxn.pygrn.lab -D cn=admin,dc=pygrn,dc=lab -w nyaa -f /sr
 
 The `groups_and_users.ldif` file adds two organizational units (OU): **Groups** and **Users**; then adds two posix groups under **ou=Groups**: **wheel** and **guests**; and three posix users under **ou=Users**: **tw1zr**, **guest1** and **guest2**. Here's a diagram depicting it:
 
-![](/blog/sysadmin-playground/5.png)
+![](02.png)
 
 The dotted lines at the bottom denote which posix users belong to which posix groups, this is accomplished by setting the users' GID number to the same as the group you want them to belong to (re-read the ldif file).
 
@@ -530,7 +530,7 @@ $ ldapsearch -ZZ -H ldap://cutxo.pygrn.lab -D cn=admin,dc=pygrn,dc=lab -w nyaa -
 
 The output of that command shows the extended ldif of the entire DN. We can also check this through that **phpLDAPadmin** front-end we deployed.
 
-![](/blog/sysadmin-playground/6.gif)
+![](03.gif)
 
 Let's log into the three VMs through **ssh** using the three different users we created on the **LDAP** server. We added passwords encoded in MD5 in the `groups_and_users.ldif` file, I'll type them here now in plain text so we can use them to **ssh** into the boxes:
 

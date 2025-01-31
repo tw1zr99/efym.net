@@ -6,7 +6,7 @@ tags: ['sysadmin', 'linux']
 series: ['Sysadmin Playground']
 series_order: 3
 ---
-#### Initialize and understand your Ansible environment to configure the virtual machines and deploy docker containers.
+Initialize and understand your Ansible environment to configure the virtual machines and deploy docker containers.
 * * *
 
 ## Configuring Ansible
@@ -449,6 +449,6 @@ To do this I'm going to create an **ssh** tunnel from my desktop computer where 
 
 Now we open a browser on our desktop, go to **localhost:6080** and we should see something like this:
 
-![](/blog/sysadmin-playground/3.png)
+![](01.png)
 
 Looking good so far. Right now we won't be able to log into the **LDAP** server because we haven't configured it yet. In the next post we will setup the master/master replication pair we spoke of before.

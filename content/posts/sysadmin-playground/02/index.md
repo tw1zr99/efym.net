@@ -6,14 +6,14 @@ tags: ['sysadmin', 'linux']
 series: ['Sysadmin Playground']
 series_order: 2
 ---
-#### Using Terraform with the KVM provider and cloud-init to spin up virtual machines while keeping the infrastructure's configuration as code.
+Using Terraform with the KVM provider and cloud-init to spin up virtual machines while keeping the infrastructure's configuration as code.
 * * *
 
 ## Visualizing the topology
 
 By the end of this post our infrastructure should look like this diagram, we'll only be working with 3 VMs for now and we will set up the rest in a later post; at the very least it should be identical from the hypervisor and downstream.
 
-![](/blog/sysadmin-playground/1.png)
+![](01.png)
 
 ## Setup Terraform to work with the libvirt provider
 
@@ -264,6 +264,6 @@ Let's now login into one the virtual machines through **ssh**:
 The `[path/to/ssh/key]` after the **-i** switch refers to the path in the computer serving as the hypervisor where the private key which corresponds to the public key we set up in the **cloud_inits** is stored. You should now have a bash prompt in the machine called **doris**.
 From here we can check our **DNS** settings as well if we wanted to; I'll drop a screengrab with a couple commands I ran to do it.
 
-![](/blog/img/sysadmin-playground2.png)
+![](02.png)
 
-In the next chapter we'll do further configuration using **Ansible** and set up our first service with **Docker**.
+In the next article we'll do further configuration using **Ansible** and set up our first service with **Docker**.
