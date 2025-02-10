@@ -3,6 +3,12 @@ title: "Services"
 showAuthor: false
 ---
 <style>
+  .prose {
+    max-width: 100%;
+  }
+  .max-w-prose {
+    max-width: 100%;
+  }
   .services-container {
     max-width: 1000px;
     margin: 0 auto;
