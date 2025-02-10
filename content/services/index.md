@@ -20,7 +20,6 @@ showAuthor: false
   }
   .service-category h2 {
     margin-bottom: 1rem;
-    border-bottom: 1px solid #ddd;
     padding-bottom: 0.25rem;
   }
   .service-buttons {
@@ -32,15 +31,17 @@ showAuthor: false
     flex: 1 1 200px;
     text-decoration: none;
     padding: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    border: 1px solid rgba(87, 87, 87, 0.22);
+    border-radius: 10px;
     transition: background 0.2s;
     text-align: center;
     background: transparent;
     color: inherit;
   }
   .service-button:hover {
-    background: #2f2f2f;
+    background: rgba(39, 53, 77, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 0 8px rgba(47, 47, 47, 0.2);
   }
   .service-icon {
     width: auto;
@@ -57,12 +58,11 @@ showAuthor: false
     display: block;
     font-size: 0.9rem;
     margin-top: 0.5rem;
-    color: #666;
+    color: #e4e4e4;
   }
 </style>
 
 <div class="services-container">
-  <h1>Services</h1>
 
   <!-- Media Category -->
   <div class="service-category">
