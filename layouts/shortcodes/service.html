@@ -1,0 +1,7 @@
+<a class="service-button" href="{{ .Get "href" }}" target="_blank">
+  <img class="service-icon" src="https://raw.githubusercontent.com/homarr-labs/dashboard-icons/main/png/{{ .Get "icon" }}" alt="{{ .Get "name" }} icon">
+  <span class="service-name">{{ .Get "name" }}</span>
+  {{ with .Get "description" }}
+    <span class="service-description">{{ . }}</span>
+  {{ end }}
+</a>
