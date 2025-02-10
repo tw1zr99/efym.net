@@ -1,0 +1,510 @@
+---
+title: "Stateless Authelia in Kubernetes"
+date: 2025-02-09T07:16:50+01:00
+showDate: true
+tag: ['kubernetes', 'sso']
+---
+## Preamble
+
+In my Kubernetes cluster I host many services, some of which require authentication. I wanted to centralise the management of that authentication for all of my cluster's users.
+
+There are many popular choices to accomplish this, some proprietary enterprise level like [Okta](https://www.okta.com) and [Cognito](https://aws.amazon.com/cognito). Some smaller open source ones like [Authentik](https://goauthentik.io), [Kanidm](https://kanidm.com) and [Keycloak](https://www.keycloak.org).
+
+Today I'll be showing Authelia. I chose it for various reasons but the most important one is being able to use a YAML file to keep a database of users. I particularly like this because it allows me to deploy it as a stateless deployment inside Kubernetes; no external databases or StatefulSets. Big plus in my book.
+
+## Objective
+
+By the end every service I want to protect (each accessible via different subdomains) with either one factor (username and password) or two factor (TOTP) should show the following login page before being able to access it:
+
+![](01.jpg)
+
+## Part 1. Stateless Authelia
+
+Authelia is deployed in a completely stateless manner using an init container that renders its configuration from a template stored in a ConfigMap. All sensitive data (such as secrets, private keys, and the user database) are stored securely in a SealedSecret.
+
+The directory structure will look as follows:
+```
+.
+├── config.yaml
+├── deployment.yaml
+├── ingress.yaml
+├── kustomization.yaml
+├── middleware.yaml
+├── namespace.yaml
+├── sealedsecret.yaml
+└── service.yaml
+```
+
+I use Kustomize and ArgoCD to deploy all my manifests and Helm charts. I will briefly touch on my usage of Kustomize here but details about those two things are out of scope for this article. Maybe I'll expand on the topics in another one.
+
+### 1.1. Create a namespace
+
+I started by creating a dedicated namespace for Authelia:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: authelia
+```
+
+### 1.2. Secure sensitive data with SealedSecrets
+
+I use SealedSecrets to manage all secrets (so that raw values never appear in git). Here’s an example SealedSecret manifest for Authelia:
+
+```yaml
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: authelia-secret
+  namespace: authelia
+  annotations:
+    sealedsecrets.bitnami.com/cluster-wide: "true"
+spec:
+  encryptedData:
+    JWT_SECRET: <encrypted-data-for-JWT_SECRET>
+    SESSION_SECRET: <encrypted-data-for-SESSION_SECRET>
+    ENCRYPTION_KEY: <encrypted-data-for-ENCRYPTION_KEY>
+    HMAC_SECRET: <encrypted-data-for-HMAC_SECRET>
+    ISSUER_PRIVATE_KEY: <encrypted-data-for-ISSUER_PRIVATE_KEY>
+    PORTAINER_CLIENT_SECRET: <encrypted-data-for-PORTAINER_CLIENT_SECRET>
+    JELLYFIN_CLIENT_SECRET: <encrypted-data-for-JELLYFIN_CLIENT_SECRET>
+    LINKDING_CLIENT_SECRET: <encrypted-data-for-LINKDING_CLIENT_SECRET>
+    HOARDER_CLIENT_SECRET: <encrypted-data-for-HOARDER_CLIENT_SECRET>
+    users.yml: <encrypted-data-for-users.yml>
+  template:
+    metadata:
+      name: authelia-secret
+      annotations:
+        sealedsecrets.bitnami.com/cluster-wide: "true"
+    type: Opaque
+```
+
+### 1.3. Define the configuration template
+
+To keep Authelia stateless, I don’t want to mount a writable ConfigMap directly (since ConfigMaps are read‑only). Instead, I store a configuration template in a ConfigMap and use an init container to render the final configuration file.
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: authelia-config
+  namespace: authelia
+data:
+  configuration.tpl.yml: |
+    server:
+      address: 0.0.0.0:9091
+
+    log:
+      level: info
+
+    identity_validation:
+      reset_password:
+        jwt_secret: ${JWT_SECRET}
+
+    authentication_backend:
+      password_reset:
+        disable: true
+      file:
+        path: /secrets/users.yml
+        password:
+          algorithm: argon2id
+          iterations: 1
+          salt_length: 16
+          parallelism: 8
+          memory: 64
+
+    access_control:
+      default_policy: one_factor
+      rules:
+        - domain:
+            - "efym.net"
+            - "login.efym.net"
+          policy: bypass
+        - domain:
+            - "*"
+          policy: one_factor
+        - domain:
+            - "adguard1.efym.net"
+            - "adguard2.efym.net"
+          subject:
+            - "group:users"
+          policy: deny
+
+    session:
+      name: authelia_session
+      same_site: lax
+      secret: ${SESSION_SECRET}
+      expiration: 8h
+      inactivity: 8h
+      cookies:
+        - domain: "efym.net"
+          authelia_url: "https://login.efym.net"
+          default_redirection_url: "https://efym.net"
+
+    regulation:
+      max_retries: 5
+      find_time: 2m
+      ban_time: 10m
+
+    theme: dark
+
+    storage:
+      encryption_key: ${ENCRYPTION_KEY}
+      local:
+        path: /config/db.sqlite3
+
+    notifier:
+      filesystem:
+        filename: /config/notification.txt
+
+    identity_providers:
+      oidc:
+        hmac_secret: ${HMAC_SECRET}
+        issuer_private_key: |
+          ${ISSUER_PRIVATE_KEY}
+          - client_id: hoarder
+            client_name: Hoarder
+            client_secret: ${HOARDER_CLIENT_SECRET}
+            public: false
+            authorization_policy: one_factor
+            redirect_uris:
+              - "https://hoarder.efym.net/api/auth/callback/custom"
+            scopes:
+              - openid
+              - profile
+              - groups
+              - email
+            consent_mode: implicit
+            userinfo_signed_response_alg: none
+            token_endpoint_auth_method: client_secret_post
+```
+
+{{< alert "circle-info" >}}
+Notice how the issuer_private_key field uses a block scalar (|) so that newlines are preserved and YAML remains valid after substitution.
+Also important to know that I stored the key with 6 spaces of indentation in my SealedSecret so that when rendered here it uses correct YAML syntax.
+{{< /alert >}}
+
+1.4. Create the Deployment with an Init Container
+
+The Deployment mounts the ConfigMap (read-only) at /config-template and uses an init container (based on a Debian image) to install gettext-base (which provides envsubst) and then render the configuration file into a writable emptyDir volume. The main container then uses that rendered configuration.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authelia
+  namespace: authelia
+  labels:
+    app: authelia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authelia
+  template:
+    metadata:
+      labels:
+        app: authelia
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: authelia
+          image: authelia/authelia:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9091
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: secret-volume
+              mountPath: /secrets
+              readOnly: true
+          env:
+            - name: TZ
+              value: "Europe/London"
+      initContainers:
+        - name: init-config
+          image: debian:bullseye-slim
+          command:
+            - sh
+            - -c
+            - |
+              apt-get update && apt-get install -y gettext-base && \
+              envsubst < /config-template/configuration.tpl.yml > /config/configuration.yml && \
+              echo "Rendered configuration:" && cat /config/configuration.yml && \
+              sleep 5
+          env:
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: authelia-secret
+                  key: JWT_SECRET
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: authelia-secret
+                  key: SESSION_SECRET
+            - name: ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: authelia-secret
+                  key: ENCRYPTION_KEY
+            - name: HMAC_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: authelia-secret
+                  key: HMAC_SECRET
+            - name: ISSUER_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: authelia-secret
+                  key: ISSUER_PRIVATE_KEY
+            - name: HOARDER_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: authelia-secret
+                  key: HOARDER_CLIENT_SECRET
+          volumeMounts:
+            - name: config-template
+              mountPath: /config-template
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config-template
+          configMap:
+            name: authelia-config
+            items:
+              - key: configuration.tpl.yml
+                path: configuration.tpl.yml
+        - name: config
+          emptyDir: {}
+        - name: secret-volume
+          secret:
+            secretName: authelia-secret
+```
+### 1.5. Create a Service
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: authelia
+  namespace: authelia
+spec:
+  selector:
+    app: authelia
+  ports:
+    - name: http
+      port: 9091
+      targetPort: 9091
+      protocol: TCP
+```
+
+### 1.6. Aggregate with Kustomize
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: authelia
+resources:
+  - namespace.yaml
+  - sealedsecret.yaml
+  - config.yaml
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+  - middleware.yaml
+```
+
+That should be all the needed files. I'll now apply them with `kubectl`.
+
+(This is where I would use ArgoCD and GitOps, but like I mentioned before that's not in scope for now.)
+```
+kubectl apply -k .
+```
+
+## Part 2. Hoarder with SSO as example
+
+With Authelia set up as an OIDC provider, I needed to configure Hoarder to use OIDC for authentication. In my Authelia configuration, I added an OIDC client with the ID hoarder. Now I'll enable OIDC in Hoarder by providing the correct environment variables.
+
+### 2.1. Hoarder Deployment Manifest
+
+Below is my Hoarder deployment manifest (with persistent storage for data, which you can adjust as needed). The key section is the environment variables that enable OIDC:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hoarder
+  labels:
+    app: hoarder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hoarder
+  template:
+    metadata:
+      labels:
+        app: hoarder
+    spec:
+      enableServiceLinks: true
+      containers:
+      - name: hoarder
+        image: ghcr.io/hoarder-app/hoarder:release
+        ports:
+        - containerPort: 3000
+          name: http
+        env:
+        - name: TZ
+          value: "Europe/London"
+        - name: DATA_DIR
+          value: "/data"
+        - name: NEXTAUTH_URL
+          value: "https://hoarder.efym.net"
+        - name: MEILI_ADDR
+          value: "http://meilisearch.meilisearch.svc.cluster.local:7700"
+        - name: MEILI_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hoarder-secret
+              key: MEILI_MASTER_KEY
+        - name: NEXTAUTH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: hoarder-secret
+              key: NEXTAUTH_SECRET
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hoarder-secret
+              key: OPENAI_API_KEY
+        - name: OAUTH_WELLKNOWN_URL
+          value: "https://login.efym.net/.well-known/openid-configuration"
+        - name: OAUTH_CLIENT_ID
+          value: "hoarder"
+        - name: OAUTH_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: hoarder-secret
+              key: HOARDER_CLIENT_SECRET
+        - name: OAUTH_SCOPE
+          value: "openid email profile"
+        - name: OAUTH_PROVIDER_NAME
+          value: "Authelia"
+        - name: OAUTH_ALLOW_DANGEROUS_EMAIL_ACCOUNT_LINKING
+          value: "false"
+        volumeMounts:
+        - name: hoarder-data
+          mountPath: /data
+      volumes:
+      - name: hoarder-data
+        persistentVolumeClaim:
+          claimName: hoarder-data
+```
+
+### 2.2. Other Hoarder Resources
+
+PersistentVolumeClaim
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hoarder-data
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 5Gi
+```
+
+Service
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: hoarder
+spec:
+  selector:
+    app: hoarder
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+```
+
+IngressRoute (I use an IngressRoute because Traefik is my ingress controller)
+
+```yaml
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: hoarder
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`hoarder.efym.net`)
+      kind: Rule
+      middlewares:
+        - name: authelia
+          namespace: authelia
+      services:
+        - name: hoarder
+          port: 3000
+  tls:
+    secretName: efym-net-tls
+```
+
+SealedSecret for Hoarder
+
+```yaml
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: hoarder-secret
+  namespace: hoarder
+spec:
+  encryptedData:
+    MEILI_MASTER_KEY: <encrypted-data-for-MEILI_MASTER_KEY>
+    NEXTAUTH_SECRET: <encrypted-data-for-NEXTAUTH_SECRET>
+    OPENAI_API_KEY: <encrypted-data-for-OPENAI_API_KEY>
+    HOARDER_CLIENT_SECRET: <encrypted-data-for-HOARDER_CLIENT_SECRET>
+  template:
+    metadata:
+      name: hoarder-secret
+      annotations:
+        sealedsecrets.bitnami.com/cluster-wide: "true"
+    type: Opaque
+```
+
+Kustomization for Hoarder
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: hoarder
+resources:
+  - namespace.yaml
+  - pvc.yaml
+  - sealedsecret.yaml
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+```
+
+## Conclusion
+
+In this article I explained how I deployed Authelia in a stateless manner on Kubernetes using an init container that renders its configuration from a template stored in a ConfigMap. All sensitive values are managed securely with SealedSecrets. Then, I showed how to configure Hoarder to use OIDC for authentication by setting the required environment variables (such as OAUTH_WELLKNOWN_URL, OAUTH_CLIENT_ID, and OAUTH_CLIENT_SECRET).
+
+Authelia can be used through a middleware to protect services or pages which do not rely on their own native authentication, or alternatively used as an OIDC provider to manage SSO if such implementation is supported by the target application.
+
+This setup allowed me to bootstrap a production-ready environment without needing pre-provisioned persistent storage for Authelia's configuration while keeping secrets secure and integrating with Hoarder via OIDC.
