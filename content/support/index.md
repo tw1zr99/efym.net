@@ -46,7 +46,7 @@ showAuthor: false
   .donation-card .crypto-address {
     font-family: monospace;
     font-size: 0.9rem;
-    word-break: wrap;
+    word-break: break-all;
   }
 </style>
 

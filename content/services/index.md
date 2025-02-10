@@ -31,7 +31,7 @@ showAuthor: false
     flex: 1 1 200px;
     text-decoration: none;
     padding: 1rem;
-    border: 1px solid rgba(87, 87, 87, 0.22);
+    border: 2px solid rgba(91, 104, 153, 0.22);
     border-radius: 10px;
     transition: background 0.2s;
     text-align: center;
