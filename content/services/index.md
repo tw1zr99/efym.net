@@ -71,7 +71,6 @@ showAuthor: false
       {{< service name="Jellyfin" icon="jellyfin.png" href="https://tv.efym.net" description="Watch movies and TV shows" >}}
       {{< service name="Navidrome" icon="navidrome.png" href="https://music.efym.net" description="Listen to music" >}}
       {{< service name="Calibre web" icon="calibre-web.png" href="https://books.efym.net" description="Read books" >}}
-      {{< service name="Pinchflat" icon="pinchflat.png" href="https://pinchflat.efym.net" description="YouTube downloader" >}}
     </div>
   </div>
 
@@ -83,6 +82,7 @@ showAuthor: false
       {{< service name="Sonarr" icon="sonarr.png" href="https://sonarr.efym.net" description="Download TV shows" >}}
       {{< service name="Prowlarr" icon="prowlarr.png" href="https://prowlarr.efym.net" description="Index manager" >}}
       {{< service name="qBittorrent" icon="qbittorrent.png" href="https://dl.efym.net" description="Torrent client" >}}
+      {{< service name="Pinchflat" icon="pinchflat.png" href="https://pinchflat.efym.net" description="YouTube downloader" >}}
     </div>
   </div>
 
@@ -92,10 +92,8 @@ showAuthor: false
     <div class="service-buttons">
       {{< service name="Authelia (login)" icon="authelia.png" href="https://login.efym.net" description="Identity provider" >}}
       {{< service name="Authelia (logout)" icon="authelia.png" href="https://login.efym.net/logout" description="Identity provider" >}}
-      {{< service name="Hoarder" icon="hoarder.png" href="https://hoarder.efym.net" description="Bookmarks manager" >}}
-      {{< service name="Linkding" icon="linkding.png" href="https://links.efym.net" description="Bookmarks manager" >}}
+      {{< service name="Karakeep" icon="karakeep.png" href="https://links.efym.net" description="Bookmarks manager" >}}
       {{< service name="Vaultwarden" icon="vaultwarden.png" href="https://vault.efym.net" description="Password manager" >}}
-      {{< service name="Actual Budget" icon="actual-budget.png" href="https://actual.efym.net" description="Finance manager" >}}
     </div>
   </div>
 
@@ -104,7 +102,8 @@ showAuthor: false
     <h2>Management</h2>
     <div class="service-buttons">
       {{< service name="Proxmox 1" icon="proxmox.png" href="https://pve.efym.net" description="Hypervisor" >}}
-      {{< service name="ArgoCD" icon="argo-cd.png" href="https://argocd.efym.net" description="GitOps for Kubernetes" >}}
+      {{< service name="Proxmox 2" icon="proxmox.png" href="https://pve2.efym.net" description="Hypervisor" >}}
+      {{< service name="Proxmox Backup Server" icon="proxmox.png" href="https://pbs.efym.net" description="Hypervisor backups" >}}
       {{< service name="Longhorn" icon="longhorn.png" href="https://longhorn.efym.net" description="Storage management" >}}
       {{< service name="Grafana" icon="grafana.png" href="https://grafana.efym.net" description="Display metrics on dashboards" >}}
       {{< service name="Filestash" icon="filestash.png" href="https://files.efym.net" description="Filesystem browser" >}}
@@ -119,9 +118,9 @@ showAuthor: false
       {{< service name="Traefik" icon="traefik.png" href="https://traefik.efym.net" description="Ingress controller" >}}
       {{< service name="OpenWrt" icon="openwrt.png" href="https://openwrt.efym.net" description="Routing and firewall" >}}
       {{< service name="TrueNAS" icon="truenas.png" href="https://truenas.efym.net" description="Network attached storage" >}}
-      {{< service name="Adguard Home 1" icon="adguard-home.png" href="https://adguard1.efym.net" description="DNS rewrites and blocks" >}}
+      {{< service name="Adguard Home 1" icon="adguard-home.png" href="https://adguard.efym.net" description="DNS rewrites and blocks" >}}
       {{< service name="Adguard Home 2" icon="adguard-home.png" href="https://adguard2.efym.net" description="DNS rewrites and blocks" >}}
-      {{< service name="WireGuard" icon="wireguard.png" href="https://wireguard.efym.net" description="VPN and exit node" >}}
+      {{< service name="Netbird" icon="netbird.png" href="https://netbird.efym.net" description="Overlay network" >}}
     </div>
   </div>
 
@@ -129,7 +128,9 @@ showAuthor: false
   <div class="service-category">
     <h2>Local area network</h2>
     <div class="service-buttons">
-      {{< service name="Proxmox" icon="proxmox.png" href="http://atlas.lan:8006" description="Hypervisor" >}}
+      {{< service name="Proxmox 1" icon="proxmox.png" href="http://atlas.lan:8006" description="Hypervisor" >}}
+      {{< service name="Proxmox 2" icon="proxmox.png" href="http://hades.lan:8006" description="Hypervisor" >}}
+      {{< service name="Proxmox Backup Server" icon="proxmox.png" href="http://venus.lan:8006" description="Hypervisor backups" >}}
       {{< service name="OpenWrt" icon="openwrt.png" href="http://quack.lan" description="Routing and firewall" >}}
       {{< service name="TrueNAS" icon="truenas.png" href="http://scale.lan" description="Network attached storage" >}}
       {{< service name="Adguard Home 1" icon="adguard-home.png" href="http://psi.lan:8083" description="DNS rewrites and blocks" >}}
