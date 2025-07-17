@@ -15,7 +15,7 @@ title = "efym.net"
   copyright = "licensed under cc by-nc-sa 4.0"
 
 [params.author]
-  name = "tw1zr"
+  name = ""
   email = "tw1zr@efym.net"
   image = "pp.gif"
   imageQuality = 96
@@ -24,6 +24,7 @@ title = "efym.net"
   links = [
     { email    = "mailto:tw1zr@efym.net" },
     { globe    = "https://efym.net" },
+    { github   = "https://github.com/tw1zr99"},
     { codeberg = "https://codeberg.org/tw1zr"},
     { pgpkey   = "https://efym.net/public.asc"},
     # { amazon = "https://www.amazon.com/hz/wishlist/ls/wishlist-id" },
