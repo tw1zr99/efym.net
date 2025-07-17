@@ -10,7 +10,7 @@ In my Kubernetes cluster I host many services, some of which require authenticat
 
 There are many popular choices to accomplish this, some proprietary enterprise level like [Okta](https://www.okta.com) and [Cognito](https://aws.amazon.com/cognito). Also some really good open source ones like [Authentik](https://goauthentik.io), [Kanidm](https://kanidm.com) and [Keycloak](https://www.keycloak.org).
 
-Today I'll be showing [Authelia](https://www.authelia.com). I chose it for various reasons but the most important one is being able to use a YAML file to keep a database of users. I particularly like this because it allows me to deploy it as a stateless deployment inside Kubernetes; no external databases or StatefulSets. Big plus in my book.
+Today I'll be showing [Authelia](https://www.authelia.com). I chose it primarily because it allows user management via a YAML file to keep a database of users. I particularly like this because it allows me to deploy it as a stateless deployment inside Kubernetes; no external databases or StatefulSets. Big plus in my book.
 
 ## Objective
 
@@ -18,6 +18,68 @@ By the end every service I want to protect (each accessible via different subdom
 
 ![](01.jpg)
 
+## Architecture overview
+
+```text
+                                +------------------------+
+                                |     User's Browser     |
+                                +-----------+------------+
+                                            |
+                                            v
+                             HTTPS request to protected service
+                                            |
+                                            v
+                              +-------------+--------------+
+                              |       Traefik Ingress      |
+                              | (ingress controller w/     |
+                              |  Authelia middleware)      |
+                              +-------------+--------------+
+                                            |
+                      Is the user authenticated? ───┐
+                                            |       |
+                         No: forward to Authelia    |
+                                            |       |
+                                            v       |
+                             +--------------+---------------+
+                             |           Authelia           |
+                             | (Stateless, Config from      |
+                             |  template + secret data)     |
+                             +--------------+---------------+
+                                            |
+                         Login with password or TOTP (2FA)  |
+                                            |
+                         Auth success → Redirect to service |
+                                            |               |
+                                            v               |
+                              +-------------+--------------+
+                              |    Protected Service (e.g. |
+                              |        Karakeep)           |
+                              +----------------------------+
+
+OIDC flow for apps that support it (like Karakeep)
+
+    +--------------------+
+    |    Karakeep        |
+    |  (OIDC Relying     |
+    |    Party)          |
+    +---------+----------+
+              |
+              | Redirect to Authelia for login
+              v
+    +---------+----------+
+    |     Authelia       |
+    | (OIDC Provider)    |
+    +---------+----------+
+              |
+              | Token/claims (via redirect)
+              v
+    +---------+----------+
+    |    Karakeep        |
+    | (accepts token and |
+    |  grants access)    |
+    +--------------------+
+
+```
 ## Part 1. Stateless Authelia
 
 Authelia is deployed in a completely stateless manner using an init container that renders its configuration from a template stored in a ConfigMap. All sensitive data (such as secrets, private keys, and the user database) are stored securely with sops+age.
@@ -175,6 +237,7 @@ data:
         hmac_secret: ${HMAC_SECRET}
         issuer_private_key: |
           ${ISSUER_PRIVATE_KEY}
+        clients:
           - client_id: karakeep
             client_name: Karakeep
             client_secret: ${KARAKEEP_CLIENT_SECRET}
@@ -302,6 +365,9 @@ spec:
           secret:
             secretName: authelia
 ```
+
+The `users.yml` file is stored as a key in the same Kubernetes secret and is automatically mounted at /secrets/users.yml due to the default behavior of secret volumes.
+
 ### 1.5. Create a Service
 
 ```yaml
@@ -489,8 +555,8 @@ sops+age secret for Karakeep
 kind: Secret
 apiVersion: v1
 metadata:
-    name: authelia
-    namespace: authelia
+    name: karakeep
+    namespace: karakeep
 type: Opaque
 stringData:
     KARAKEEP_CLIENT_SECRET: <encrypted-data>
