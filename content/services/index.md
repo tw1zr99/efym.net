@@ -93,7 +93,6 @@ showAuthor: false
       {{< service name="Authelia (login)" icon="authelia.png" href="https://login.efym.net" description="Identity provider" >}}
       {{< service name="Authelia (logout)" icon="authelia.png" href="https://login.efym.net/logout" description="Identity provider" >}}
       {{< service name="Karakeep" icon="karakeep.png" href="https://links.efym.net" description="Bookmarks manager" >}}
-      {{< service name="Vaultwarden" icon="vaultwarden.png" href="https://vault.efym.net" description="Password manager" >}}
     </div>
   </div>
 
@@ -107,7 +106,6 @@ showAuthor: false
       {{< service name="Longhorn" icon="longhorn.png" href="https://longhorn.efym.net" description="Storage management" >}}
       {{< service name="Grafana" icon="grafana.png" href="https://grafana.efym.net" description="Display metrics on dashboards" >}}
       {{< service name="Filestash" icon="filestash.png" href="https://files.efym.net" description="Filesystem browser" >}}
-      {{< service name="Backrest" icon="backrest.png" href="https://backrest.efym.net" description="Backups management" >}}
     </div>
   </div>
 
