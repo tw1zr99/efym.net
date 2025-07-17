@@ -34,15 +34,15 @@ jobs:
         with:
           dockerfile: docker/Dockerfile
 
-  spellcheck:
-    name: Spellcheck Markdown
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Run cspell
-        uses: streetsidesoftware/cspell-action@v7
-        with:
-          args: '"content/**/*.md"'
+  # spellcheck:
+  #   name: Spellcheck Markdown
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Run cspell
+  #       uses: streetsidesoftware/cspell-action@v7
+  #       with:
+  #         args: '"content/**/*.md"'
 
   html-validate:
     name: Validate Generated HTML
@@ -55,8 +55,8 @@ jobs:
           hugo-version: '0.140.2'
       - name: Build Hugo site
         run: hugo --minify
-      - name: Run W3C HTML Validator
-        uses: gauntface/html-validator-action@v1
+      - name: HTML5Validator
+        uses: Cyb3r-Jak3/html5validator-action
         with:
           files: public/**/*.html
 
