@@ -1,3 +1,4 @@
+ # hadolint ignore=DL3006
 FROM nginx:latest
 
 # NOTE: Remove default configuration and copy efym.net static files

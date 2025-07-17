@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Run markdownlint via reviewdog
-        uses: reviewdog/action-markdownlint@0.26.2
+        uses: DavidAnson/markdownlint-cli2-action@v20
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Run cspell
-        uses: joerick/cspell-action@v4
+        uses: streetsidesoftware/cspell-action@v7
         with:
           args: '"content/**/*.md"'
 
