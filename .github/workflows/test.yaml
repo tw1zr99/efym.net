@@ -56,7 +56,7 @@ jobs:
       - name: Build Hugo site
         run: hugo --minify
       - name: HTML5Validator
-        uses: Cyb3r-Jak3/html5validator-action
+        uses: Cyb3r-Jak3/html5validator-action@v7.2.0
         with:
           files: public/**/*.html
 
