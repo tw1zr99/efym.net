@@ -1,6 +1,5 @@
 name: CI Checks
 
-# Run on pushes to develop, and on PRs targeting master
 on:
   push:
     branches:
@@ -9,12 +8,10 @@ on:
     branches:
       - master
 
-# Most jobs only need to read your repo
 permissions:
   contents: read
 
 jobs:
-  # 1. Markdown linting
   markdownlint:
     name: Lint Markdown
     runs-on: ubuntu-latest
@@ -27,7 +24,6 @@ jobs:
           reporter: github-pr-review
           filter_mode: diff
 
-  # 2. Dockerfile linting
   hadolint:
     name: Lint Dockerfile
     runs-on: ubuntu-latest
@@ -38,7 +34,6 @@ jobs:
         with:
           dockerfile: docker/Dockerfile
 
-  # 3. Spell‑checking
   spellcheck:
     name: Spellcheck Markdown
     runs-on: ubuntu-latest
@@ -47,10 +42,8 @@ jobs:
       - name: Run cspell
         uses: joerick/cspell-action@v4
         with:
-          # check all your markdown under content/
           args: '"content/**/*.md"'
 
-  # 6. HTML validation
   html-validate:
     name: Validate Generated HTML
     runs-on: ubuntu-latest
@@ -67,7 +60,6 @@ jobs:
         with:
           files: public/**/*.html
 
-  # 7. Performance & Accessibility via Lighthouse
   lighthouse:
     name: Lighthouse CI
     runs-on: ubuntu-latest
