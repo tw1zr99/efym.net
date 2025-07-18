@@ -46,7 +46,7 @@ jobs:
 
       - name: Patch efym.net image tag
         run: |
-          IMAGE_TAG=sha-$(echo $GITHUB_SHA | cut -c1-7)
+          IMAGE_TAG=sha-${GITHUB_SHA}
           IMAGE_URI=ghcr.io/tw1zr99/efym.net:$IMAGE_TAG
 
           sed -i "s|image:.*|image: $IMAGE_URI|" lab/kubernetes/apps/efym-net/deployment.yaml
