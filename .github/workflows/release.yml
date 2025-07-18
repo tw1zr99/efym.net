@@ -35,3 +35,41 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}:latest
             ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+      - name: prepare and push update to lab repo
+        env:
+          GITOPS_PAT: ${{ secrets.GITOPS_PAT }}
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+          # Clone the repo and create/update the develop branch
+          git clone https://tw1zr99:${GITOPS_PAT}@github.com/tw1zr99/lab.git
+          cd lab
+
+          git checkout -B develop origin/develop || git checkout -b develop
+
+          cd kubernetes/apps/efym-net
+
+          # Create image tag and patch deployment.yaml
+          IMAGE_TAG=sha-$(echo $GITHUB_SHA | cut -c1-7)
+          IMAGE_URI=ghcr.io/tw1zr99/efym.net:$IMAGE_TAG
+
+          sed -i "s|image:.*|image: $IMAGE_URI|" deployment.yaml
+
+          git add deployment.yaml
+          git commit -m "Update efym.net image to $IMAGE_TAG"
+          git push origin develop
+
+      - name: create or update PR in lab repo
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITOPS_PAT }}
+          commit-message: "update efym.net image to ${{ github.sha }}"
+          title: "update efym.net image to ${{ github.sha }}"
+          body: |
+            Automated update of efym.net image tag to `sha-${{ github.sha }}`.
+            Triggered by changes to the source repo.
+          base: master
+          branch: develop
+          path: lab
