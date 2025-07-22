@@ -16,16 +16,16 @@ I'm a massive **vim/neovim** enthusiast, I customise 99% of my computer interact
 
 Here's my essential toolkit:
 
-- **Window Manager:** [awesomeWM](https://github.com/awesomeWM/awesome)
-- **Application Launcher:** [rofi](https://github.com/davatorium/rofi)
-- **Terminal Emulator:** [alacritty](https://github.com/alacritty/alacritty)
-- **Text Editor:** [neovim](https://github.com/neovim/neovim)
-- **File Manager:** [yazi](https://github.com/sxyazi/yazi)
-- **Music Player:** [mpd](https://github.com/MusicPlayerDaemon/MPD) + [ncmpcpp](https://github.com/ncmpcpp/ncmpcpp)
-- **Video Player:** [mpv](https://github.com/mpv-player/mpv)
-- **Image Viewer:** [nsxiv](https://codeberg.org/nsxiv/nsxiv)
-- **Password Manager:** [password-store](https://git.zx2c4.com/password-store) & [Bitwarden](https://bitwarden.com)
-- **Web Browsers:** [Firefox](https://www.mozilla.org/en-GB/firefox) & [LibreWolf](https://librewolf.net)
+- **Window manager:** [awesomeWM](https://github.com/awesomeWM/awesome)
+- **Application launcher:** [rofi](https://github.com/davatorium/rofi)
+- **Terminal emulator:** [alacritty](https://github.com/alacritty/alacritty)
+- **Text editor:** [neovim](https://github.com/neovim/neovim)
+- **File manager:** [yazi](https://github.com/sxyazi/yazi)
+- **Music player:** [mpd](https://github.com/MusicPlayerDaemon/MPD) + [ncmpcpp](https://github.com/ncmpcpp/ncmpcpp)
+- **Video player:** [mpv](https://github.com/mpv-player/mpv)
+- **Image viewer:** [nsxiv](https://codeberg.org/nsxiv/nsxiv)
+- **Password manager:** [password-store](https://git.zx2c4.com/password-store) & [Bitwarden](https://bitwarden.com)
+- **Web browsers:** [Firefox](https://www.mozilla.org/en-GB/firefox) & [LibreWolf](https://librewolf.net)
 
 These are my primary tools, though my toolkit is always expanding.
 
