@@ -34,14 +34,12 @@ These are my primary tools, though my toolkit is always expanding.
 Here are a few screenshots showcasing my setup during various activities:
 
 {{< gallery >}}
-  <img src="01.webp" class="grid-w33" />
-  <img src="02.webp" class="grid-w33" />
-  <img src="03.webp" class="grid-w33" />
-  <img src="04.webp" class="grid-w33" />
-  <img src="05.webp" class="grid-w33" />
-  <img src="06.webp" class="grid-w33" />
-  <img src="07.webp" class="grid-w33" />
-  <img src="08.webp" class="grid-w33" />
+  <img src="01.jpg" class="grid-w33" />
+  <img src="02.jpg" class="grid-w33" />
+  <img src="03.jpg" class="grid-w33" />
+  <img src="04.jpg" class="grid-w33" />
+  <img src="05.jpg" class="grid-w33" />
+  <img src="06.jpg" class="grid-w33" />
 {{< /gallery >}}
 
 I prefer the command line for its efficiency and precision. However, for tasks that demand graphical interfaces, like photo or video editing, I opt for tools like [GIMP](https://gimp.org), [OpenShot](https://openshot.org), [ImageMagick](https://imagemagick.org), and [FFmpeg](https://ffmpeg.org).
