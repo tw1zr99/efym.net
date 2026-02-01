@@ -92,6 +92,7 @@ showAuthor: false
     <div class="service-buttons">
       {{< service name="Authelia (login)" icon="authelia.png" href="https://login.efym.net" description="Identity provider" >}}
       {{< service name="Authelia (logout)" icon="authelia.png" href="https://login.efym.net/logout" description="Identity provider" >}}
+      {{< service name="OpenCloud" icon="open-cloud.png" href="https://cloud.efym.net" description="Personal cloud" >}}
       {{< service name="Karakeep" icon="karakeep.png" href="https://links.efym.net" description="Bookmarks manager" >}}
     </div>
   </div>
@@ -100,9 +101,10 @@ showAuthor: false
   <div class="service-category">
     <h2>Management</h2>
     <div class="service-buttons">
-      {{< service name="Proxmox 1" icon="proxmox.png" href="https://pve.efym.net" description="Hypervisor" >}}
-      {{< service name="Proxmox 2" icon="proxmox.png" href="https://pve2.efym.net" description="Hypervisor" >}}
-      {{< service name="Proxmox Backup Server" icon="proxmox.png" href="https://pbs.efym.net" description="Hypervisor backups" >}}
+      {{< service name="Proxmox 1" icon="proxmox.png" href="https://atlas.lan:8006" description="Hypervisor" >}}
+      {{< service name="Proxmox 2" icon="proxmox.png" href="https://hades.lan:8006" description="Hypervisor" >}}
+      {{< service name="Proxmox 3" icon="proxmox.png" href="https://venus.lan:8006" description="Hypervisor" >}}
+      {{< service name="Backrest" icon="backrest.png" href="https://backrest.efym.net" description="Backup manager using restic" >}}
       {{< service name="Longhorn" icon="longhorn.png" href="https://longhorn.efym.net" description="Storage management" >}}
       {{< service name="Grafana" icon="grafana.png" href="https://grafana.efym.net" description="Display metrics on dashboards" >}}
       {{< service name="Filestash" icon="filestash.png" href="https://files.efym.net" description="Filesystem browser" >}}
@@ -116,8 +118,7 @@ showAuthor: false
       {{< service name="Traefik" icon="traefik.png" href="https://traefik.efym.net" description="Ingress controller" >}}
       {{< service name="OpenWrt" icon="openwrt.png" href="https://openwrt.efym.net" description="Routing and firewall" >}}
       {{< service name="TrueNAS" icon="truenas.png" href="https://truenas.efym.net" description="Network attached storage" >}}
-      {{< service name="Adguard Home 1" icon="adguard-home.png" href="https://adguard.efym.net" description="DNS rewrites and blocks" >}}
-      {{< service name="Adguard Home 2" icon="adguard-home.png" href="https://adguard2.efym.net" description="DNS rewrites and blocks" >}}
+      {{< service name="Adguard Home" icon="adguard-home.png" href="https://adguard.efym.net" description="DNS rewrites and blocks" >}}
       {{< service name="Netbird" icon="netbird.png" href="https://netbird.efym.net" description="Overlay network" >}}
     </div>
   </div>
@@ -126,13 +127,12 @@ showAuthor: false
   <div class="service-category">
     <h2>Local area network</h2>
     <div class="service-buttons">
-      {{< service name="Proxmox 1" icon="proxmox.png" href="http://atlas.lan:8006" description="Hypervisor" >}}
-      {{< service name="Proxmox 2" icon="proxmox.png" href="http://hades.lan:8006" description="Hypervisor" >}}
-      {{< service name="Proxmox Backup Server" icon="proxmox.png" href="http://venus.lan:8006" description="Hypervisor backups" >}}
+      {{< service name="Proxmox 1" icon="proxmox.png" href="https://atlas.lan:8006" description="Hypervisor" >}}
+      {{< service name="Proxmox 2" icon="proxmox.png" href="https://hades.lan:8006" description="Hypervisor" >}}
+      {{< service name="Proxmox 3" icon="proxmox.png" href="https://venus.lan:8006" description="Hypervisor" >}}
       {{< service name="OpenWrt" icon="openwrt.png" href="http://quack.lan" description="Routing and firewall" >}}
       {{< service name="TrueNAS" icon="truenas.png" href="http://scale.lan" description="Network attached storage" >}}
-      {{< service name="Adguard Home 1" icon="adguard-home.png" href="http://psi.lan:8083" description="DNS rewrites and blocks" >}}
-      {{< service name="Adguard Home 2" icon="adguard-home.png" href="http://isp.lan:8083" description="DNS rewrites and blocks" >}}
+      {{< service name="Adguard Home" icon="adguard-home.png" href="http://psi.lan:8083" description="DNS rewrites and blocks" >}}
     </div>
   </div>
 
