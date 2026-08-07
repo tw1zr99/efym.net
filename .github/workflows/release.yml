@@ -44,12 +44,15 @@ jobs:
           path: lab
           ref: master
 
-      - name: Patch efym.net image tag
-        run: |
-          IMAGE_TAG=sha-${GITHUB_SHA}
-          IMAGE_URI=ghcr.io/tw1zr99/efym.net:$IMAGE_TAG
+      - name: Update canonical efym.net image tag
+        uses: mikefarah/yq@v4.47.1
+        with:
+          cmd: yq -i '.EFYM_NET_IMAGE_TAG = "sha-${{ github.sha }}"' lab/config/cluster.yaml
 
-          sed -i "s|image:.*|image: $IMAGE_URI|" lab/kubernetes/apps/efym-net/deployment.yaml
+      - name: Update generated cluster variables
+        uses: mikefarah/yq@v4.47.1
+        with:
+          cmd: yq -i '.data = load("lab/config/cluster.yaml")' lab/kubernetes/clusters/production/cluster-vars.yaml
 
       - name: Create or update PR in lab repo
         uses: peter-evans/create-pull-request@v6
