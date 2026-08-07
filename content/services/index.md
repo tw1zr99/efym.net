@@ -81,8 +81,8 @@ showAuthor: false
       {{< service name="Radarr" icon="radarr.png" href="https://radarr.efym.net" description="Download movies" >}}
       {{< service name="Sonarr" icon="sonarr.png" href="https://sonarr.efym.net" description="Download TV shows" >}}
       {{< service name="Prowlarr" icon="prowlarr.png" href="https://prowlarr.efym.net" description="Index manager" >}}
-      {{< service name="qBittorrent" icon="qbittorrent.png" href="https://dl.efym.net" description="Torrent client" >}}
       {{< service name="Pinchflat" icon="pinchflat.png" href="https://pinchflat.efym.net" description="YouTube downloader" >}}
+      {{< service name="qBittorrent" icon="qbittorrent.png" href="https://dl.efym.net" description="Torrent client" >}}
     </div>
   </div>
 
@@ -141,7 +141,7 @@ showAuthor: false
     <h2>Syncthing</h2>
     <div class="service-buttons">
       {{< service name="mirage" icon="syncthing.png" href="http://mirage.lan:8384" >}}
-      {{< service name="wesley" icon="syncthing.png" href="http://wesley.lan:8384" >}}
+      {{< service name="wesley" icon="syncthing.png" href="http://wander.lan:8384" >}}
       {{< service name="scale" icon="syncthing.png" href="http://scale.lan:8384" >}}
       {{< service name="laser" icon="syncthing.png" href="http://laser.lan:8384" >}}
     </div>
